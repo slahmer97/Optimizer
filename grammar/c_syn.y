@@ -2,6 +2,7 @@
 	#include<stdio.h>
 	#include "headers/defs.h"
 	#include "headers/y.tab.h"
+	#include <string.h>
 
 	int for_depth_counter_var = 0;
 	int direct_declarator_var = 0;
@@ -24,6 +25,10 @@
 		char * string_exp;
 	}vv;
 
+	struct {
+		int size, strideX, strideY;
+		char *X, *Y;		
+	} vec;
 }
 
 %token FOR WHILE DO IF ELSE RETURN
@@ -33,380 +38,53 @@
 %token '='
 %token '(' ')' ';' '}' '{' ']' '[' '/' '*' '+' '-' '<' '>' '%'
 %token AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP INC DEC LEFT_OP RIGHT_OP
-%type <vv> type_specifier declaration_specifiers primary_expression expression  compound_statement statement_list declaration_list identifier_list
+%type <vv> type_specifier declaration_specifiers primary_expression expression  compound_statement statement_list declaration_list identifier_list constant
 %type <vv> selection_statement pointer direct_declarator declarator init_declarator declaration init_declarator_list initializer initializer_list statement postfix_expression
-%type <vv> iteration_statement multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression
-%type <vv> expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
+%type <vv> iteration_statement multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression init_vector
+%type <vv> expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator opening_statement closing_statement;
+%type <vec> vector_copy
 %start optimizer_start
 %%
 
-optimizer_start : iteration_statement
-		| iteration_statement optimizer_start
-
-//==================================START-EXTERNAL======================================================================
-translation_unit
-	: compound_statement {
-		printf("DONE ! \n");
-		return 0;
-	}
-	//| translation_unit compound_statement
-	;
-compound_statement
-	: '{' '}' {
-
-	}
-	| '{' statement_list '}' {
-
-	}
-	| '{' declaration_list '}' {
-
-	}
-	| '{' declaration_list statement_list '}' {
-	}
-	;
-
-//=====================================EXTERNAL-END=====================================================================
-
-//=====================================statement-START==================================================================
-
-statement_list
-	: statement {
-	}
-	| statement_list statement {
-
-	}
-statement
-	: //labeled_statement
-	  compound_statement {
-	  }
-	| expression_statement {
-	}
-	| selection_statement {
-	}
-	| iteration_statement {
-	}
-	;
-expression_statement
-	: ';' {
-	}
-	| expression ';' {
-
-	}
-	;
-
-//=======================================Statement-END==================================================================
-
-//=======================================LOOP-Conditional-EXR================================================================
-selection_statement
-	: IF '(' expression ')' compound_statement {
-
-	}
-	| IF '(' expression ')' compound_statement ELSE compound_statement {
-	}
-iteration_statement :
-	 WHILE {printf("START-WHILE\n ");}'(' expression ')' compound_statement {printf("END-WHILE\n ");}
-
-	| iter_counter FOR '(' expression_statement expression_statement expression')' compound_statement {
-
-	}
-iter_counter : {}
-//=======================================CONDITIONAL-EXPR-END===========================================================
-
-//==================================START-ASSIGNEMENT===================================================================
-expression:
- 	assignment_expression {
-
- 	}
-	| expression ',' assignment_expression {
-
-
-	}
-	;
-postfix_expression
-	: primary_expression {
-
-	}
-	//| postfix_expression '[' expression ']'
-	//| postfix_expression '(' ')'
-	//| postfix_expression INC
-	//| postfix_expression DEC
-
-unary_expression
-	: postfix_expression {
-
-	}
-	| INC unary_expression {
-
-	}
-	| DEC unary_expression {
-
-	}
-	;
-multiplicative_expression
-	: unary_expression {
-
-	}
-	| multiplicative_expression '*' unary_expression {
-
-
-
-	}
-	| multiplicative_expression '/' unary_expression {
-
-
-	}
-	| multiplicative_expression '%' unary_expression {
-
-	}
-	;
-additive_expression
-	: multiplicative_expression {
-
-	}
-	| additive_expression '+' multiplicative_expression {
-
-	}
-	| additive_expression '-' multiplicative_expression {
-
-	}
-	;
-shift_expression
-	: additive_expression {
-	}
-	| shift_expression LEFT_OP additive_expression {
-
-	}
-	| shift_expression RIGHT_OP additive_expression {
-	}
-	;
-relational_expression
-	: shift_expression{
-	}
-	| relational_expression '<' shift_expression {
-
-	}
-	| relational_expression '>' shift_expression {
-
-	}
-	| relational_expression LE_OP shift_expression{
-
-	}
-	| relational_expression GE_OP shift_expression {
-
-	}
-	;
-equality_expression
-	: relational_expression{
-	}
-	| equality_expression EQ_OP relational_expression {
-	}
-	| equality_expression NE_OP relational_expression {
-	}
-	;
-and_expression
-	: equality_expression {
-	}
-	| and_expression '&' equality_expression {
-
-	}
-	;
-exclusive_or_expression
-	: and_expression{
-	}
-	| exclusive_or_expression '^' and_expression {
-
-	}
-	;
-inclusive_or_expression
-	: exclusive_or_expression {
-	}
-	| inclusive_or_expression '|' exclusive_or_expression {
-
-	}
-	;
-logical_and_expression
-	: inclusive_or_expression {
-	}
-	| logical_and_expression AND_OP inclusive_or_expression {
-
-	}
-	;
-logical_or_expression
-	: logical_and_expression {
-	}
-	| logical_or_expression OR_OP logical_and_expression {
-
-	}
-	;
-//TODO add conditional assignement
-
-assignment_expression :
-	logical_and_expression {
-		$$.string_exp = $1.string_exp;
-	}
-	| unary_expression assignment_operator assignment_expression {
-
-	}
-	;
-assignment_operator
-	: '=' {
-	}
-	;
-//====================================ASSIGNEMENT-END=================================================================
-//DONE TODO================================================
-declaration_list
-	: declaration {
-
-	}
-	| declaration_list declaration {
-	}
-	;//=================================================USED
-
-//DONE
-declaration :
-
-	declaration_specifiers init_declarator_list ';' {
-	}
-	; //==========================================================USED
-
-//DONE
-declaration_specifiers
-	:
-	type_specifier {
-	}
-
-	;
-//=======================================================USED
-//DONE
-type_specifier
-	: VOID {
-
-
-	}
-	| INT  {
-
-	}
-	| FLOAT {
-
-	}
-	;
-//DONE
-init_declarator_list
-	: init_declarator {
-
-
-	}
-	| init_declarator_list ',' init_declarator {
-
-
-
-	}
-	;
-
-//DONE
-init_declarator
-	: declarator {
-
-
-	}
-	| declarator '=' initializer {
-
-
-	}
-
-	;
-
-//DONE
-declarator
-	: pointer direct_declarator {
-
-	}
-	| direct_declarator {
-
-	}
-	;
-
-// DONE
-direct_declarator
-	: IDENTIFIER {
-
-
-	}
-        //| direct_declarator '[' ']' {
-        // 	$$.count_p = $1.count_p +1;
-       // 	// TODO maybe add the array size
-        //}
-        | direct_declarator '[' CONST_INT ']' {
-
+optimizer_start : optimizer_copy_op;
+
+optimizer_copy_op : FOR '(' IDENTIFIER '=' constant ';' IDENTIFIER '<' expression ';'  incr_expr ')' 
+        '{' vector_copy ';' '}' 
+        
+		{  
+			printf("N: %s\n", $9.string_val);
+			printf("X: %s\n", $14.X);
+			printf("incX: %d\n", $14.strideX);
+			printf("Y: %s\n", $14.Y);
+			printf("incY: %d\n", $14.strideY);
+			//fprintf(yyout, "cblas_scopy(%s, %s, %s, %s, %s);", );
         }
-        //| direct_declarator '(' ')'
-
-        //| direct_declarator '(' identifier_list ')'
-
-
         ;
-// DONE
-pointer
-	: '*'{
 
-	}
-	//| '*' type_qualifier_list
-	| '*' pointer {
+vector_copy : IDENTIFIER '[' IDENTIFIER ']' '=' IDENTIFIER '[' IDENTIFIER ']'
+            {
+				if (strcmp($3.string_val, $8.string_val) == 0) {
+					int len1 = strlen($1.string_val);
+					int len2 = strlen($6.string_val);
+					$$.X = malloc(sizeof(len1));
+					$$.Y = malloc(sizeof(len2));
+					strncpy($$.X, $1.string_val, len1);
+					strncpy($$.Y, $6.string_val, len2);
+					$$.strideX = 1;
+					$$.strideY = 1;
+				}
+            }
+            ;
 
-	}
-	;
+incr_expr : IDENTIFIER '+' '+'
+			| IDENTIFIER '=' IDENTIFIER '+' constant
+			| IDENTIFIER '+' '=' constant
+			;
 
+expression :  IDENTIFIER | constant;
+           ;
 
-initializer
-	: assignment_expression {
-
-
-	}
-	| '{' initializer_list '}' {
-
-	}
-	;
-initializer_list
-	: initializer {
-	}
-	| initializer_list ',' initializer {
-
-
-	}
-	;
-
-//DONE
-primary_expression
-	: IDENTIFIER {
-
-	}
-	| CONST_INT {
-
-
-	}
-	| CONST_FLOAT {
-
-	}
-	//| STRING {
-	//TODO Not implemented yet
-	//}
-	| '(' expression ')' {
-
-
-
-	}
-	;
-
-
-//DONE
-identifier_list
-	: IDENTIFIER {
-
-	}
-	| identifier_list ',' IDENTIFIER {
-
-	}
-	;
+constant : CONST_INT | CONST_FLOAT ;
 %%
 
 int yyerror(const char *str)

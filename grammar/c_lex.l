@@ -13,6 +13,10 @@ IS			(u|U|l|L)*
 %}
 
 %%
+"/*" {
+    comment();
+}
+
 "do" {
     return(DO);
 }
