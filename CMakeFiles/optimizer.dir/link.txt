@@ -1,1 +1,0 @@
-/usr/bin/cc   -rdynamic CMakeFiles/optimizer.dir/src/main.c.o CMakeFiles/optimizer.dir/src/symbol.c.o CMakeFiles/optimizer.dir/src/lex.yy.c.o CMakeFiles/optimizer.dir/src/y.tab.c.o  -o optimizer -lrt -lpthread 
