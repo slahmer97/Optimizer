@@ -38,7 +38,7 @@
 # define YY_YY_Y_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
-# define YYDEBUG 0
+# define YYDEBUG 1
 #endif
 #if YYDEBUG
 extern int yydebug;
@@ -108,7 +108,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 11 "grammar/c_syn.y" /* yacc.c:1921  */
+#line 12 "grammar/c_syn.y" /* yacc.c:1921  */
 
 	struct {
 		int count_p;
@@ -122,16 +122,14 @@ union YYSTYPE
 		char* string_val;
 		int type_counter;
 
-
+		char *X, *Y;
+		char *n;
+		node id;
+		int id_size;
 		char * string_exp;
 	}vv;
 
-	struct {
-		int size, strideX, strideY;
-		char *X, *Y;		
-	} vec;
-
-#line 135 "y.tab.h" /* yacc.c:1921  */
+#line 133 "y.tab.h" /* yacc.c:1921  */
 };
 
 typedef union YYSTYPE YYSTYPE;
