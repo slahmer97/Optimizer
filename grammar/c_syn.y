@@ -97,7 +97,7 @@ expression_statement: ';' {
 
 	}
 	| expression ';' {
-
+		$$.id = $1.id;
 	}
 	;
 
@@ -114,6 +114,13 @@ iteration_statement:
 	 WHILE {printf("START-WHILE\n ");}'(' expression ')' compound_statement {}
 
 	| iter_counter FOR '(' expression_statement expression_statement expression')' compound_statement {
+			int n=0;
+			node tmp = $4.id;
+        		while(tmp->next != NULL) {
+        			tmp= tmp->next;
+        			n++;
+        		}
+        		printf("test: %d\n", n);
 	};
 	
 iter_counter: {for_depth_counter_var++;};
@@ -131,12 +138,7 @@ expression:
 
 postfix_expression: primary_expression {
 		$$.id = $1.id;
-		int n=0;
-		while($$.id->next != NULL) {
-			$$.id = $$.id->next;
-			n++;
-		}
-		printf("test: %d\n", n);
+
 	}
 	| postfix_expression '[' expression ']' {
 		$$.id = fusion($1.id, $3.id);
