@@ -43,9 +43,9 @@
 %type <vv> expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator 
 %start start
 %%
-start : translation_unit {
+start : optimizer_level1;
 
-}
+optimizer_level1 : FOR '(' IDENTIFIER '=' ';' IDENTIFIER  expression_statement expression')' compound_statement
 translation_unit
 	: compound_statement {
 	}
@@ -81,9 +81,9 @@ statement_list
 	}
 statement
 	: //labeled_statement
-	  compound_statement {
+	compound_statement {
 
-	  }
+	}
 	| expression_statement {
 
 	}
@@ -274,7 +274,7 @@ logical_or_expression
 //TODO add conditional assignement
 
 assignment_expression :
-	logical_and_expression {
+	logical_or_expression {
 
 	}
 	| unary_expression assignment_operator assignment_expression {
