@@ -403,6 +403,7 @@ identifier_list
 %%
 
 node createNode(){
+//
     node temp;
     temp = (node)malloc(sizeof(struct LinkedList));
     temp->next = NULL;
