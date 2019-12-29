@@ -22,7 +22,7 @@
 	#include "headers/defs.h"
   	#include "headers/linkedlist.h"
 	#include "headers/y.tab.h"
-	
+	#include <stdlib.h>
 	int for_depth_counter_var = 0;
 	int direct_declarator_var = 0;
 	int current_type_var = -1;
@@ -541,8 +541,7 @@ node addNode(node head, symbol_p value){
 	int len = strlen(value);
     temp->entry = (symbol_p) malloc(len * sizeof(symbol_p));
 	free(value);
-
-    strncpy(temp->entry, value, len);
+    temp->entry = value;
     if(head == NULL){
         head = temp;
     }
@@ -566,7 +565,7 @@ int yywrap()
 {
 return 1;
 }
-#line 570 "y.tab.c"
+#line 569 "y.tab.c"
 
 #if YYDEBUG
 #include <stdio.h>	/* needed for printf */
@@ -1304,7 +1303,7 @@ case 89:
 
 	}
 break;
-#line 1308 "y.tab.c"
+#line 1307 "y.tab.c"
     }
     yystack.s_mark -= yym;
     yystate = *yystack.s_mark;

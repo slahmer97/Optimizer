@@ -3,7 +3,7 @@
 	#include "headers/defs.h"
   	#include "headers/linkedlist.h"
 	#include "headers/y.tab.h"
-	
+	#include <stdlib.h>
 	int for_depth_counter_var = 0;
 	int direct_declarator_var = 0;
 	int current_type_var = -1;
@@ -448,8 +448,7 @@ node addNode(node head, symbol_p value){
 	int len = strlen(value);
     temp->entry = (symbol_p) malloc(len * sizeof(symbol_p));
 	free(value);
-
-    strncpy(temp->entry, value, len);
+    temp->entry = value;
     if(head == NULL){
         head = temp;
     }
