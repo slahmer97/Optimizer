@@ -40,21 +40,21 @@
 %type <vv> type_specifier declaration_specifiers primary_expression expression  compound_statement statement_list declaration_list identifier_list
 %type <vv> selection_statement pointer direct_declarator declarator init_declarator declaration init_declarator_list initializer initializer_list statement postfix_expression
 %type <vv> iteration_statement multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression
-%type <vv> expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator 
+%type <vv> expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator optimizer_lvl_1
 %start start
 %%
-start : translation_unit {
+start: optimizer_lvl_1 {
 
 }
-translation_unit
-	: compound_statement {
+;
+translation_unit: compound_statement {
 	}
 	| translation_unit compound_statement {
 
 	}
 	;
-compound_statement
-	: '{' '}' {
+
+compound_statement: '{' '}' {
 
 	}
 	| '{' statement_list '}' {
@@ -73,14 +73,13 @@ compound_statement
 
 //=====================================statement-START==================================================================
 
-statement_list
-	: statement {
+statement_list: statement {
 	}
 	| statement_list statement {
 
-	}
-statement
-	: //labeled_statement
+	};
+
+statement: //labeled_statement
 	  compound_statement {
 
 	  }
@@ -93,8 +92,8 @@ statement
 	| iteration_statement {
 	}
 	;
-expression_statement
-	: ';' {
+
+expression_statement: ';' {
 
 	}
 	| expression ';' {
@@ -105,57 +104,62 @@ expression_statement
 //=======================================Statement-END==================================================================
 
 //=======================================LOOP-Conditional-EXR================================================================
-selection_statement
-	: IF '(' expression ')' compound_statement {
+selection_statement: IF '(' expression ')' compound_statement {
 
 	}
 	| IF '(' expression ')' compound_statement ELSE compound_statement {
 
-	}
-iteration_statement :
+	};
+iteration_statement:
 	 WHILE {printf("START-WHILE\n ");}'(' expression ')' compound_statement {}
 
 	| iter_counter FOR '(' expression_statement expression_statement expression')' compound_statement {
-
-	}
-iter_counter : {for_depth_counter_var++;}
+	};
+	
+iter_counter: {for_depth_counter_var++;};
 //=======================================CONDITIONAL-EXPR-END===========================================================
 
 //==================================START-ASSIGNEMENT===================================================================
 expression:
  	assignment_expression {
-
+		$$.id = $1.id;
  	}
 	| expression ',' assignment_expression {
-
+		$$.id = fusion($1.id, $3.id);
 	}
 	;
-postfix_expression
-	: primary_expression {
 
+postfix_expression: primary_expression {
+		$$.id = $1.id;
+		int n=0;
+		while($$.id->next != NULL) {
+			$$.id = $$.id->next;
+			n++;
+		}
+		printf("test: %d\n", n);
 	}
 	| postfix_expression '[' expression ']' {
-
+		$$.id = fusion($1.id, $3.id);
 	}
 	| postfix_expression '(' ')' {
-
+		$$.id = $1.id;
 	}
 	| postfix_expression INC {
-
+		$$.id = $1.id;
 	}
 	| postfix_expression DEC {
-
+		$$.id = $1.id;
 	}
 
 unary_expression
 	: postfix_expression {
-
+		$$.id = $1.id;
 	}
 	| INC unary_expression {
-
+		$$.id = $2.id;
 	}
 	| DEC unary_expression {
-
+		$$.id = $2.id;
 	}
 	;
 multiplicative_expression
@@ -229,8 +233,7 @@ equality_expression
 	;
 and_expression
 	: equality_expression {
-
-
+		
 	}
 	| and_expression '&' equality_expression {
 
@@ -256,30 +259,27 @@ inclusive_or_expression
 	;
 logical_and_expression
 	: inclusive_or_expression {
-
+		$$.id = $1.id;
 	}
 	| logical_and_expression AND_OP inclusive_or_expression {
-
-
+		$$.id = fusion($1.id, $3.id);
 	}
 	;
-logical_or_expression
-	: logical_and_expression {
-
+logical_or_expression: logical_and_expression {
+		$$.id = $1.id;
 	}
 	| logical_or_expression OR_OP logical_and_expression {
-
+		$$.id = fusion($1.id, $3.id);
 	}
 	;
 //TODO add conditional assignement
 
-assignment_expression :
-	logical_and_expression {
-
+assignment_expression:
+	logical_or_expression {
+		$$.id = $1.id;
 	}
 	| unary_expression assignment_operator assignment_expression {
-
-
+		$$.id = fusion($1.id, $3.id);
 	}
 	;
 assignment_operator
@@ -408,18 +408,19 @@ initializer_list
 	;
 
 //DONE,DONE
-primary_expression
-	: IDENTIFIER {
-
+primary_expression: IDENTIFIER {
+		symbol_p tmp = 0;
+		int ret = lookup_symbol_entry($1.string_val, &tmp);
+		$$.id = addNode($1.id, tmp);
 	}
 	| CONST_INT {
-
+		$$.id = 0;
 	}
 	| CONST_FLOAT {
-
+		$$.id = 0;
 	}
 	| '(' expression ')' {
-
+		$$.id = $2.id;
 	}
 	;
 
@@ -433,6 +434,8 @@ identifier_list
 
 	}
 	;
+
+optimizer_lvl_1: {};
 %%
 
 node createNode(){
@@ -440,6 +443,19 @@ node createNode(){
     temp = (node)malloc(sizeof(struct LinkedList)); 
     temp->next = NULL;
     return temp;
+}
+
+node fusion(node x, node y) {
+	node head, tmp = x;
+	if (tmp == NULL) 
+		head = y;
+	else {
+		while (tmp->next != NULL) 
+			tmp = tmp->next;
+		tmp->next = y;
+		head = x;
+	}
+	return head;
 }
 
 node addNode(node head, symbol_p value){
