@@ -376,8 +376,8 @@ initializer_list
 primary_expression
 	: IDENTIFIER {
 		symbol_p tmp = 0;
-		int ret = lookup_symbol_entry($1.string_val, &tmp);
-		$$.id = addNode($1.id, tmp);
+		//int ret = lookup_symbol_entry($1.string_val, &tmp);
+		//$$.id = addNode($1.id, tmp);
 	}
 	| CONST_INT {
 		$$.id = (node)0;
