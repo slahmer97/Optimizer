@@ -1,11 +1,13 @@
 %{
 	#include<stdio.h>
 	#include "headers/defs.h"
+	#include "headers/linkedlist.h"
 	#include "headers/y.tab.h"
-
+  	#include <stdlib.h>
 	int for_depth_counter_var = 0;
 	int direct_declarator_var = 0;
 	int current_type_var = -1;
+	int yydebug = 1;
 %}
 %union{
 	struct {
@@ -19,7 +21,7 @@
 		int t[4];
 		char* string_val;
 		int type_counter;
-
+		node id;
 
 		char * string_exp;
 	}vv;
@@ -46,8 +48,8 @@ optimizer_start : iteration_statement
 //==================================START-EXTERNAL======================================================================
 translation_unit
 	: compound_statement {
-		printf("DONE ! \n");
-		return 0;
+		//printf("DONE ! \n");
+		//return 0;
 	}
 	//| translation_unit compound_statement
 	;
@@ -124,12 +126,12 @@ expression:
 	;
 postfix_expression
 	: primary_expression {
-
+		printf("PRIm : %d\n",$1.id);
 	}
-	//| postfix_expression '[' expression ']'
-	//| postfix_expression '(' ')'
-	//| postfix_expression INC
-	//| postfix_expression DEC
+	| postfix_expression '[' expression ']'
+	| postfix_expression '(' ')'
+	| postfix_expression INC
+	| postfix_expression DEC
 
 unary_expression
 	: postfix_expression {
@@ -242,7 +244,6 @@ logical_or_expression
 
 assignment_expression :
 	logical_and_expression {
-		$$.string_exp = $1.string_exp;
 	}
 	| unary_expression assignment_operator assignment_expression {
 
@@ -332,16 +333,13 @@ direct_declarator
 
 
 	}
-        //| direct_declarator '[' ']' {
-        // 	$$.count_p = $1.count_p +1;
-       // 	// TODO maybe add the array size
-        //}
+
         | direct_declarator '[' CONST_INT ']' {
 
         }
-        //| direct_declarator '(' ')'
+        | direct_declarator '(' ')'
 
-        //| direct_declarator '(' identifier_list ')'
+        | direct_declarator '(' identifier_list ')'
 
 
         ;
@@ -350,7 +348,6 @@ pointer
 	: '*'{
 
 	}
-	//| '*' type_qualifier_list
 	| '*' pointer {
 
 	}
@@ -378,22 +375,18 @@ initializer_list
 //DONE
 primary_expression
 	: IDENTIFIER {
-
+		symbol_p tmp = 0;
+		int ret = lookup_symbol_entry($1.string_val, &tmp);
+		$$.id = addNode($1.id, tmp);
 	}
 	| CONST_INT {
-
-
+		$$.id = (node)0;
 	}
 	| CONST_FLOAT {
-
+		$$.id = (node)0;
 	}
-	//| STRING {
-	//TODO Not implemented yet
-	//}
 	| '(' expression ')' {
-
-
-
+		$$.id = $2.id;
 	}
 	;
 
@@ -408,6 +401,45 @@ identifier_list
 	}
 	;
 %%
+
+node createNode(){
+    node temp;
+    temp = (node)malloc(sizeof(struct LinkedList));
+    temp->next = NULL;
+    return temp;
+}
+
+node fusion(node x, node y) {
+	node head, tmp = x;
+	if (tmp == NULL)
+		head = y;
+	else {
+		while (tmp->next != NULL)
+			tmp = tmp->next;
+		tmp->next = y;
+		head = x;
+	}
+	return head;
+}
+
+node addNode(node head, symbol_p value){
+    node temp,p;
+    temp = createNode();
+    temp->entry = (symbol_p) malloc(sizeof(symbol_p));
+	free(value);
+    temp->entry = value;
+    if(head == NULL){
+        head = temp;
+    }
+    else{
+        p  = head;
+        while(p->next != NULL){
+            p = p->next;
+        }
+        p->next = temp;
+    }
+    return head;
+}
 
 int yyerror(const char *str)
 {

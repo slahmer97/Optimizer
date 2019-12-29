@@ -15,6 +15,10 @@ int main(int argc,char**argv){
 
     while (1){
         printf("[+] Optimizer is waitting\n");
+        int sval;
+        sem_getvalue(globalData.sem_prod_cons,&sval);
+        printf("[+] sem : %d\n",sval);
+
         sem_wait(globalData.sem_prod_cons);
         if(globalData.finished != 0)
             break;

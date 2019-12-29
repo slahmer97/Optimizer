@@ -7,8 +7,11 @@ IS			(u|U|l|L)*
 %{
 	#include<stdlib.h>
 	#include<string.h>
+	    #include "headers/linkedlist.h"
+
     #include "headers/y.tab.h"
 	#include "headers/defs.h"
+
 	void comment(void);
 %}
 
