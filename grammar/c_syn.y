@@ -44,12 +44,12 @@
 %%
 optimizer_start : optimizer_1;
 
-optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' expression ';'  IDENTIFIER INC')'
+optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER LE_OP shift_expression ';'  IDENTIFIER INC')'
  		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']'  ';' '}'
  		{
  			// $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;
+ 			if( $3.sentry == $11.sentry && $3.sentry == $7.sentry && $3.sentry == $17.sentry && $3.sentry == $22.sentry){
 
- 			if( $3.sentry == $9.sentry && $3.sentry == $15.sentry && $3.sentry == $20.sentry){
 				return 1333;
  			}
  			else
