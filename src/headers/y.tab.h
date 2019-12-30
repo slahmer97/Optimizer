@@ -41,10 +41,9 @@ typedef union{
 		int t[4];
 		char* string_val;
 		int type_counter;
-
+		node_t*list;
 		char *X, *Y;
 		char *n;
-		node id;
 		int id_size;
 		char * string_exp;
 	}vv;

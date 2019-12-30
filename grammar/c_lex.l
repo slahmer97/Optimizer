@@ -64,11 +64,12 @@ IS			(u|U|l|L)*
 
 {L}({L}|{D})* {
     printf("ID ");
-    symbol tmp;
+    symbol_p tmp;
     yylval.vv.string_val = strdup(yytext);
     int rep = lookup_symbol_entry(yytext,&tmp);
     if(rep != 1)
             printf("ERROR_ID ");
+    yylval.vv.sentry = tmp;
     return(IDENTIFIER);
 }
 
