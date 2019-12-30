@@ -867,44 +867,41 @@ case 7:
 YY_RULE_SETUP
 #line 43 "grammar/c_lex.l"
 {
-    printf("INT ");
     return(INT);
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 48 "grammar/c_lex.l"
+#line 47 "grammar/c_lex.l"
 {
     return(RETURN);
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 52 "grammar/c_lex.l"
+#line 51 "grammar/c_lex.l"
 {
-    printf("CONST_Q ");
     return (CONST_Q);
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 57 "grammar/c_lex.l"
+#line 55 "grammar/c_lex.l"
 {
     return(VOID);
 }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 61 "grammar/c_lex.l"
+#line 59 "grammar/c_lex.l"
 {
     return(WHILE);
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 65 "grammar/c_lex.l"
+#line 63 "grammar/c_lex.l"
 {
-    printf("ID ");
     symbol_p tmp;
     yylval.vv.string_val = strdup(yytext);
     int rep = lookup_symbol_entry(yytext,&tmp);
@@ -916,20 +913,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 76 "grammar/c_lex.l"
+#line 73 "grammar/c_lex.l"
 {
     //TODO unsigned long
     yylval.vv.string_val = strdup(yytext);
-    printf("CONST_UNSIGNED ");
     return(CONST_INT);
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 83 "grammar/c_lex.l"
+#line 79 "grammar/c_lex.l"
 {
     yylval.vv.val = atoi(yytext);
-    printf("CONST_D_INT_1 ");
     yylval.vv.string_val = strdup(yytext);
 
     return(CONST_INT);
@@ -938,82 +933,73 @@ YY_RULE_SETUP
 case 15:
 /* rule 15 can match eol */
 YY_RULE_SETUP
-#line 91 "grammar/c_lex.l"
+#line 86 "grammar/c_lex.l"
 {
-    printf("CONST ");
     return(CONST);
     yylval.vv.string_val = strdup(yytext);
 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 97 "grammar/c_lex.l"
+#line 91 "grammar/c_lex.l"
 {
     yylval.vv.val = atoi(yytext);
-    printf("CONST_INT_2 ");
     yylval.vv.string_val = strdup(yytext);
     return(CONST);
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 104 "grammar/c_lex.l"
+#line 97 "grammar/c_lex.l"
 {
-    printf("CONST_D.D.FS ");
     yylval.vv.string_val = strdup(yytext);
     return(CONST_FLOAT);
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 110 "grammar/c_lex.l"
+#line 102 "grammar/c_lex.l"
 {
-    //TODO float con = to_float( yytext );
-    //TODO yyval = con;
+
     yylval.vv.string_val = strdup(yytext);
-    printf("CONST_D.D.E.FS ");
     return(CONST_FLOAT);
 }
 	YY_BREAK
 case 19:
 /* rule 19 can match eol */
 YY_RULE_SETUP
-#line 118 "grammar/c_lex.l"
+#line 108 "grammar/c_lex.l"
 {
-    printf("STRING ");
     yylval.vv.string_val = strdup(yytext);
     return(STRING);
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 124 "grammar/c_lex.l"
+#line 113 "grammar/c_lex.l"
 {
-    printf("++ ");
 
     return (INC);
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 129 "grammar/c_lex.l"
+#line 117 "grammar/c_lex.l"
 {
-    printf("--");
 
     return (DEC);
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 134 "grammar/c_lex.l"
+#line 121 "grammar/c_lex.l"
 {
-    printf("&& ");
     return(AND_OP);
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 139 "grammar/c_lex.l"
+#line 125 "grammar/c_lex.l"
 {
     printf("|| ");
     return(OR_OP);
@@ -1021,193 +1007,175 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 144 "grammar/c_lex.l"
+#line 130 "grammar/c_lex.l"
 {
-    printf("<= ");
     return(LE_OP);
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 148 "grammar/c_lex.l"
+#line 133 "grammar/c_lex.l"
 {
-    printf("< ");
     return('<');
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 152 "grammar/c_lex.l"
+#line 136 "grammar/c_lex.l"
 {
-    printf("> ");
     return('>');
 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 156 "grammar/c_lex.l"
+#line 139 "grammar/c_lex.l"
 {
-    printf(">= ");
     return(GE_OP);
 }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 160 "grammar/c_lex.l"
+#line 142 "grammar/c_lex.l"
 {
-    printf("<< ");
     return(LEFT_OP);
 }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 164 "grammar/c_lex.l"
+#line 145 "grammar/c_lex.l"
 {
-    printf(">> ");
     return(RIGHT_OP);
 }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 169 "grammar/c_lex.l"
+#line 149 "grammar/c_lex.l"
 {
     return(EQ_OP);
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 172 "grammar/c_lex.l"
+#line 152 "grammar/c_lex.l"
 {
     return(NE_OP);
 }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 176 "grammar/c_lex.l"
+#line 156 "grammar/c_lex.l"
 {
-    printf("END_INSRT\n");
     return(';');
 }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 181 "grammar/c_lex.l"
+#line 160 "grammar/c_lex.l"
 {
-    printf("{ ");
     return('{');
 }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 186 "grammar/c_lex.l"
+#line 164 "grammar/c_lex.l"
 {
-    printf("} ");
     return('}');
 }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 191 "grammar/c_lex.l"
+#line 168 "grammar/c_lex.l"
 {
-    printf(", ");
     return(',');
 }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 196 "grammar/c_lex.l"
+#line 172 "grammar/c_lex.l"
 {
-    printf("= ");
     return('=');
 }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 201 "grammar/c_lex.l"
+#line 176 "grammar/c_lex.l"
 {
     return('(');
 }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 205 "grammar/c_lex.l"
+#line 180 "grammar/c_lex.l"
 {
     return(')');
 }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 209 "grammar/c_lex.l"
+#line 184 "grammar/c_lex.l"
 {
-    printf("[ ");
     return('[');
 }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 214 "grammar/c_lex.l"
+#line 188 "grammar/c_lex.l"
 {
-    printf("] ");
     return(']');
 }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 219 "grammar/c_lex.l"
+#line 192 "grammar/c_lex.l"
 {
     return('.');
 }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 223 "grammar/c_lex.l"
+#line 196 "grammar/c_lex.l"
 {
-    printf("% ");
     return('%');
 }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 229 "grammar/c_lex.l"
+#line 201 "grammar/c_lex.l"
 {
-    printf("- ");
     return('-');
 }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 234 "grammar/c_lex.l"
+#line 205 "grammar/c_lex.l"
 {
-    printf("+ ");
     return('+');
 }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 239 "grammar/c_lex.l"
+#line 209 "grammar/c_lex.l"
 {
-    printf("* ");
     return('*');
 }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 244 "grammar/c_lex.l"
+#line 213 "grammar/c_lex.l"
 {
-    printf("/ ");
     return('/');
 }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 248 "grammar/c_lex.l"
+#line 216 "grammar/c_lex.l"
 {
     return ('!');
 }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 252 "grammar/c_lex.l"
+#line 220 "grammar/c_lex.l"
 {
 
 }
@@ -1215,22 +1183,22 @@ YY_RULE_SETUP
 case 49:
 /* rule 49 can match eol */
 YY_RULE_SETUP
-#line 255 "grammar/c_lex.l"
+#line 223 "grammar/c_lex.l"
 {
 line_counter++;
 }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 258 "grammar/c_lex.l"
+#line 226 "grammar/c_lex.l"
 { printf("char was not recognized!\n"); }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 260 "grammar/c_lex.l"
+#line 228 "grammar/c_lex.l"
 ECHO;
 	YY_BREAK
-#line 1233 "lex.yy.c"
+#line 1201 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2235,7 +2203,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 260 "grammar/c_lex.l"
+#line 228 "grammar/c_lex.l"
 
 
 

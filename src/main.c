@@ -22,7 +22,8 @@ int main(int argc,char**argv){
         yyin = fopen(OPTIMIZER_REQUEST, "r");
         //yyout = fopen(OPTIMIZER_FILE,"w");
         ret = yyparse();
-        if(ret == 0)
+        printf("ret : %d",ret);
+        if(ret == 1333)
             globalData.symbol->optimized = 1;
         else
            globalData.symbol->optimized = -1;

@@ -69,10 +69,8 @@ statement_list: statement {
 
 statement: //labeled_statement
 	  compound_statement {
-
 	  }
 	| expression_statement {
-
 	}
 	| selection_statement {
 
@@ -85,6 +83,8 @@ expression_statement: ';' {
 
 	}
 	| expression ';' {
+		$$.list = $1.list;
+		print_list($$.list);
 	}
 	;
 
@@ -98,10 +98,10 @@ selection_statement: IF '(' expression ')' compound_statement {
 
 	};
 iteration_statement:
-	 WHILE {printf("START-WHILE\n ");}'(' expression ')' compound_statement {}
+	 WHILE {}'(' expression ')' compound_statement {}
 
 	| iter_counter FOR '(' expression_statement expression_statement expression')' compound_statement {
-
+		return 1333;
 	};
 	
 iter_counter: {for_depth_counter_var++;};
@@ -110,116 +110,174 @@ iter_counter: {for_depth_counter_var++;};
 //==================================START-ASSIGNEMENT===================================================================
 expression:
  	assignment_expression {
+			//printf("TEST ASSIGN\n");
+        		$$.list = $1.list;
+        		//print_list($$.list);
  	}
 	| expression ',' assignment_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 
 postfix_expression: primary_expression {
+		$$.list = $1.list;
 	}
 	| postfix_expression '[' expression ']' {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	| postfix_expression '(' ')' {
+		$$.list = $1.list;
 	}
 	| postfix_expression INC {
+		$$.list = $1.list;
 	}
 	| postfix_expression DEC {
+		$$.list = $1.list;
 	}
 
 unary_expression
 	: postfix_expression {
+			$$.list = $1.list;
 	}
 	| INC unary_expression {
+			$$.list = $2.list;
 	}
 	| DEC unary_expression {
+			$$.list = $2.list;
 	}
 	;
 multiplicative_expression
 	: unary_expression {
+			$$.list = $1.list;
 	}
 	| multiplicative_expression '*' unary_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	| multiplicative_expression '/' unary_expression {
-
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	| multiplicative_expression '%' unary_expression {
-
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 additive_expression
 	: multiplicative_expression {
+		$$.list = $1.list;
 	}
 	| additive_expression '+' multiplicative_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	| additive_expression '-' multiplicative_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 shift_expression
 	: additive_expression {
+	$$.list = $1.list;
 	}
 	| shift_expression LEFT_OP additive_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	| shift_expression RIGHT_OP additive_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 relational_expression
 	: shift_expression{
-
+		$$.list = $1.list;
 	}
 	| relational_expression '<' shift_expression {
-
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	| relational_expression '>' shift_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	| relational_expression LE_OP shift_expression{
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	| relational_expression GE_OP shift_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 equality_expression
 	: relational_expression{
+		$$.list = $1.list;
 	}
 	| equality_expression EQ_OP relational_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	| equality_expression NE_OP relational_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 and_expression
 	: equality_expression {
+		$$.list = $1.list;
 	}
 	| and_expression '&' equality_expression {
-
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 exclusive_or_expression
 	: and_expression{
+		$$.list = $1.list;
 	}
 	| exclusive_or_expression '^' and_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 inclusive_or_expression
 	: exclusive_or_expression {
+		$$.list = $1.list;
 	}
 	| inclusive_or_expression '|' exclusive_or_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 logical_and_expression
 	: inclusive_or_expression {
+		$$.list = $1.list;
 	}
 	| logical_and_expression AND_OP inclusive_or_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 logical_or_expression: logical_and_expression {
+		$$.list = $1.list;
 	}
 	| logical_or_expression OR_OP logical_and_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 //TODO add conditional assignement
 
 assignment_expression:
 	logical_or_expression {
+		$$.list = $1.list;
 	}
 	| unary_expression assignment_operator assignment_expression {
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 assignment_operator
@@ -231,10 +289,11 @@ assignment_operator
 //DONE TODO================================================
 declaration_list
 	: declaration {
-
+		$$.list = $1.list;
 	}
 	| declaration_list declaration {
-
+		concatenate($1.list,$2.list);
+		$$.list = $1.list;
 	}
 	;//=================================================USED
 
@@ -244,8 +303,7 @@ declaration :
 	//we have type in declaration_specifiers
 	// check if declaration_specifier type fits into all items of init_declarator_list
 	declaration_specifiers init_declarator_list ';' {
-
-
+		$$.list = $2.list;
 	}
 	; //==========================================================USED
 
@@ -272,22 +330,22 @@ type_specifier
 //DONE
 init_declarator_list
 	: init_declarator {
-
+		$$.list = $1.list;
 	}
 	| init_declarator_list ',' init_declarator {
-
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 
 //DONE
 init_declarator
 	: declarator {
-
-
+		$$.list = $1.list;
 	}
 	| declarator '=' initializer {
-
-
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 
 	;
@@ -295,20 +353,20 @@ init_declarator
 //DONE
 declarator
 	: pointer direct_declarator {
-
+		push(&$$.list,$2.sentry);
 	}
 	| direct_declarator {
-
+		$$.list = $1.list;
 	}
 	;
 
 // DONE
 direct_declarator
 	: IDENTIFIER {
-
+		push(&$$.list,$1.sentry);
 	}
         | direct_declarator '[' CONST_INT ']' {
-
+		$$.list = $1.list;
         }
         //| direct_declarator '(' ')'
 
@@ -331,16 +389,19 @@ pointer
 
 initializer
 	: assignment_expression {
+		$$.list = $1.list;
 	}
 	| '{' initializer_list '}' {
-
+		$$.list = $2.list;
 	}
 	;
 initializer_list
 	: initializer {
+		$$.list = $1.list;
 	}
 	| initializer_list ',' initializer {
-
+		concatenate($1.list,$3.list);
+		$$.list = $1.list;
 	}
 	;
 

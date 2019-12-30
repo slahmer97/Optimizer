@@ -41,7 +41,6 @@ IS			(u|U|l|L)*
 }
 
 "int" {
-    printf("INT ");
     return(INT);
 }
 
@@ -50,7 +49,6 @@ IS			(u|U|l|L)*
 }
 
 "const" {
-    printf("CONST_Q ");
     return (CONST_Q);
 }
 
@@ -63,7 +61,6 @@ IS			(u|U|l|L)*
 }
 
 {L}({L}|{D})* {
-    printf("ID ");
     symbol_p tmp;
     yylval.vv.string_val = strdup(yytext);
     int rep = lookup_symbol_entry(yytext,&tmp);
@@ -76,63 +73,52 @@ IS			(u|U|l|L)*
 0{D}+{IS}? {
     //TODO unsigned long
     yylval.vv.string_val = strdup(yytext);
-    printf("CONST_UNSIGNED ");
     return(CONST_INT);
 }
 
 {D}+{IS}? {
     yylval.vv.val = atoi(yytext);
-    printf("CONST_D_INT_1 ");
     yylval.vv.string_val = strdup(yytext);
 
     return(CONST_INT);
 }
 
 L?'(\\.|[^\\'])+' {
-    printf("CONST ");
     return(CONST);
     yylval.vv.string_val = strdup(yytext);
 }
 
 {D}+{E}{FS}? {
     yylval.vv.val = atoi(yytext);
-    printf("CONST_INT_2 ");
     yylval.vv.string_val = strdup(yytext);
     return(CONST);
 }
 
 {D}*"."{D}+({E})?{FS}? {
-    printf("CONST_D.D.FS ");
     yylval.vv.string_val = strdup(yytext);
     return(CONST_FLOAT);
 }
 
 {D}+"."{D}*({E})?{FS}? {
-    //TODO float con = to_float( yytext );
-    //TODO yyval = con;
+
     yylval.vv.string_val = strdup(yytext);
-    printf("CONST_D.D.E.FS ");
     return(CONST_FLOAT);
 }
 
 L?\"(\\.|[^\\"])*\"	{
-    printf("STRING ");
     yylval.vv.string_val = strdup(yytext);
     return(STRING);
 }
 
 "++" {
-    printf("++ ");
 
     return (INC);
 }
 "--" {
-    printf("--");
 
     return (DEC);
 }
 "&&" {
-    printf("&& ");
     return(AND_OP);
 }
 
@@ -142,27 +128,21 @@ L?\"(\\.|[^\\"])*\"	{
 }
 
 "<=" {
-    printf("<= ");
     return(LE_OP);
 }
 "<" {
-    printf("< ");
     return('<');
 }
 ">" {
-    printf("> ");
     return('>');
 }
 ">=" {
-    printf(">= ");
     return(GE_OP);
 }
 "<<" {
-    printf("<< ");
     return(LEFT_OP);
 }
 ">>" {
-    printf(">> ");
     return(RIGHT_OP);
 }
 
@@ -174,27 +154,22 @@ L?\"(\\.|[^\\"])*\"	{
 }
 
 ";" {
-    printf("END_INSRT\n");
     return(';');
 }
 
 ("{"|"<%") {
-    printf("{ ");
     return('{');
 }
 
 ("}"|"%>") {
-    printf("} ");
     return('}');
 }
 
 "," {
-    printf(", ");
     return(',');
 }
 
 "="	{
-    printf("= ");
     return('=');
 }
 
@@ -207,12 +182,10 @@ L?\"(\\.|[^\\"])*\"	{
 }
 
 ("["|"<:") {
-    printf("[ ");
     return('[');
 }
 
 ("]"|":>") {
-    printf("] ");
     return(']');
 }
 
@@ -221,28 +194,23 @@ L?\"(\\.|[^\\"])*\"	{
 }
 
 "%"	{
-    printf("% ");
     return('%');
 }
 
 
 "-"	{
-    printf("- ");
     return('-');
 }
 
 "+"	{
-    printf("+ ");
     return('+');
 }
 
 "*"	{
-    printf("* ");
     return('*');
 }
 
 "/" {
-    printf("/ ");
     return('/');
 }
 "!" {
