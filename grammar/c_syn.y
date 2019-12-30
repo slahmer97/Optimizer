@@ -40,8 +40,23 @@
 %type <vv> selection_statement pointer direct_declarator declarator init_declarator declaration init_declarator_list initializer initializer_list statement postfix_expression
 %type <vv> iteration_statement multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression
 %type <vv> expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
-%start iteration_statement
+%start optimizer_start
 %%
+optimizer_start : optimizer_1;
+
+optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' expression ';'  IDENTIFIER INC')'
+ 		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']'  ';' '}'
+ 		{
+ 			// $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;
+
+ 			if( $3.sentry == $9.sentry && $3.sentry == $15.sentry && $3.sentry == $20.sentry){
+				return 1333;
+ 			}
+ 			else
+ 				return -1;
+             	};
+
+
 compound_statement: '{' '}' {
 
 	}
@@ -100,10 +115,10 @@ selection_statement: IF '(' expression ')' compound_statement {
 iteration_statement:
 	 WHILE {}'(' expression ')' compound_statement {}
 
-	| iter_counter FOR '(' expression_statement expression_statement expression')' compound_statement {
+	| FOR '(' expression_statement expression_statement expression')' compound_statement {
 		return 1333;
 	};
-	
+
 iter_counter: {for_depth_counter_var++;};
 //=======================================CONDITIONAL-EXPR-END===========================================================
 
