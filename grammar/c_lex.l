@@ -61,9 +61,11 @@ IS			(u|U|l|L)*
 }
 
 {L}({L}|{D})* {
-    symbol_p tmp;
+    symbol_p tmp = 0;
     yylval.vv.string_val = strdup(yytext);
     int rep = lookup_symbol_entry(yytext,&tmp);
+    printf("Pointer : %p\n",tmp);
+    printf("Var name : %s\n", yylval.vv.string_val);
     if(rep != 1)
             printf("ERROR_ID ");
     yylval.vv.sentry = tmp;

@@ -49,7 +49,21 @@ optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER LE_OP 
  		{
  			// $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;
  			if( $3.sentry == $11.sentry && $3.sentry == $7.sentry && $3.sentry == $17.sentry && $3.sentry == $22.sentry){
-
+				int index_len = strlen($3.string_val);
+				int dest_len = strlen($15.string_val);
+				int orig_len = strlen($20.string_val);
+				int total_len = index_len+dest_len+orig_len+50;
+				//cblas_ccopy(const int N, const void *X, const int incX,void *Y, const int incY);
+				char *res = malloc(total_len);
+				memset(res,0,total_len);
+				snprintf(res,total_len,"cblas_ccopy(%s,(const void*)&%s,%s,%s,%s);","SHI-ASS",$15.string_val,
+											     "1",$20.string_val,"1");
+				printf("\n---------------\nFunc : \n %s \n---------------\n",res);
+				FILE* f = fopen(OPTIMIZER_FILE,"w");
+				fprintf(f,"%s",res);
+				fclose(f);
+				globalData.symbol->bytes_count = total_len;
+				free(res);
 				return 1333;
  			}
  			else

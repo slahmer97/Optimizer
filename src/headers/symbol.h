@@ -17,44 +17,48 @@
 typedef struct __symbol__ symbol;
 typedef symbol* symbol_p;
 struct global_data globalData;
+#define N 1000
+
+#define SHARED_SIZE sizeof(symbol)*N+sizeof(int)*4
 
 #define VAR_SYM 999999
 #define VAR_ARR 999999
+
+
 #define DIM_MAX 10 //TODO change later to dynamic
 
+#define TYPE_VARIABLE 88888
+#define TYPE_ARRAY 88887
+#define TYPE_FUNCTION 88889
 struct __symbol__ {
     char name[IDLEN];
     int type;
-    union{
-        //TODO
-        struct __sym_var__{
-            unsigned int type;
-        }var;
 
+    unsigned int glob_type;
+    union{
+        struct __sym_var__{
+            // unsigned int type;
+        }var;
         struct __sym_arr_{
-            unsigned int type;
+            // unsigned int type;
             unsigned int is_static :1;
             int dimention_m;
             int dimention_p;
             int size[10];
         }arr;
-        struct __symbol__* inner_tsym;
     };
 
     unsigned short is_dec : 1; // check if this entry (var,pointer,function,...) was declared
     unsigned short is_init : 1; // check if this entry (var,pointer,... ) was initialized
-
-
-
     unsigned short is_used:1;
 };
 
 
-#define N 1000
-#define CODE_LEN 100000
 struct shared_symbol{
     int count;
     int optimized;
+    int finished;
+    int bytes_count;
     symbol entries[N];
 };
 
@@ -63,10 +67,6 @@ struct global_data{
     sem_t * sem_symbol;
     struct shared_symbol* symbol;
     sem_t * sem_prod_cons;
-
-    int finished;
-
-
 
 };
 

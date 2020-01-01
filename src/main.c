@@ -11,12 +11,14 @@ int remove_file(const char*);
 int main(int argc,char**argv){
     globalData.symbol = subscribe_shared_symbol("Blaster");
     int ret = -1;
+    struct shared_symbol* zz =  globalData.symbol;
     globalData.symbol->optimized = -1;
 
+    display_symbol_table();
     while (1){
         printf("[+] Optimizer is waitting\n");
         sem_wait(globalData.sem_prod_cons);
-        if(globalData.finished != 0)
+        if(globalData.symbol->finished != 0)
             break;
         printf("[+] Optimizer Started\n");
         yyin = fopen(OPTIMIZER_REQUEST, "r");
