@@ -1,7 +1,7 @@
 %{
+  	#include "headers/linkedlist.h"
 	#include<stdio.h>
 	#include "headers/defs.h"
-  	#include "headers/linkedlist.h"
 	#include "headers/y.tab.h"
 	#include <stdlib.h>
 	int for_depth_counter_var = 0;
@@ -31,9 +31,8 @@
 		int op_type;
 	}zz;
 }
-
-%token FOR WHILE DO IF ELSE RETURN
 %token INT VOID FLOAT
+%token FOR WHILE DO IF ELSE RETURN
 %token CONST_Q //type qualifier  const int...
 %token <vv> CONST_INT CONST_FLOAT IDENTIFIER STRING CONST
 %token '='
@@ -52,7 +51,15 @@ optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_o
  		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']'  ';' '}'
  		{
  			// $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;
+			symbol_p t = $15.sentry;
+			symbol_p z =  $20.sentry;;
+			if( t != 0 && z != 0){
+				if(!(t->glob_type == FLOAT && z->glob_type == FLOAT)){
+					printf("TYPE is not supported yet : %d",t->glob_type);
+					return -33;
+				}
 
+			}
  			printf("EXPR : %s\n",$5.string_exp);
  			if( $3.sentry == $11.sentry && $3.sentry == $7.sentry && $3.sentry == $17.sentry && $3.sentry == $22.sentry){
  				int assig_len = strlen($5.string_exp);
@@ -60,14 +67,14 @@ optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_o
 				int index_len = strlen($3.string_val);
 				int dest_len = strlen($15.string_val);
 				int orig_len = strlen($20.string_val);
-				int total_len = assig_len+shift_len+index_len+dest_len+orig_len+60;
+				int total_len = assig_len+shift_len+index_len+dest_len+orig_len+32;
 				//cblas_ccopy(const int N, const void *X, const int incX,void *Y, const int incY);
 				char *res = malloc(total_len);
 				memset(res,0,total_len);
 				if($8.op_type == 0)
-					snprintf(res,total_len,"cblas_ccopy(%s-%s+1,(const void*)(%s+%s),%s,(void*)(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$15.string_val,"1",$20.string_val,$5.string_exp,"1");
+					snprintf(res,total_len,"cblas_scopy(%s-%s+1,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$15.string_val,"1",$20.string_val,$5.string_exp,"1");
 				else
-					snprintf(res,total_len-2,"cblas_ccopy(%s-%s,(const void*)(%s+%s),%s,(void*)(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$15.string_val,"1",$20.string_val,$5.string_exp,"1");
+					snprintf(res,total_len-2,"cblas_scopy(%s-%s,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$15.string_val,"1",$20.string_val,$5.string_exp,"1");
 
 				printf("\n---------------\nFunc : \n %s \n---------------\n",res);
 				FILE* f = fopen(OPTIMIZER_FILE,"w");

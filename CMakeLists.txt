@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
-add_executable(optimizer src/main.c src/symbol.c src/lex.yy.c src/headers/cblas.h src/y.tab.c src/headers/symbol.h src/headers/defs.h src/headers/y.tab.h src/linkedlist.c src/headers/linkedlist.h)
+add_executable(optimizer src/main.c src/symbol.c src/lex.yy.c src/y.tab.c src/headers/symbol.h src/headers/defs.h src/headers/y.tab.h src/linkedlist.c src/headers/linkedlist.h)
 
 target_link_libraries(optimizer rt pthread )
-target_compile_options(optimizer PRIVATE  -Wall -l /usr/local/lib/ -L liblibblas.a )
+target_compile_options(optimizer PRIVATE )
