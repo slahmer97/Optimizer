@@ -15,7 +15,10 @@ int yyerror(const char *str);
 int yywrap(void);
 int yyparse(void);
 int yylex(void);
+//void yy_flush_buffer(YY_BUFFER_STATE  b);
+//#define YY_FLUSH_BUFFER yy_flush_buffer( YY_CURRENT_BUFFER )
 
+extern void yyrestart(FILE * input_file );
 
 //TODO ALL public functions
 

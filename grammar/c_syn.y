@@ -27,6 +27,9 @@
 		int id_size;
 		char * string_exp;
 	}vv;
+	struct {
+		int op_type;
+	}zz;
 }
 
 %token FOR WHILE DO IF ELSE RETURN
@@ -40,11 +43,12 @@
 %type <vv> selection_statement pointer direct_declarator declarator init_declarator declaration init_declarator_list initializer initializer_list statement postfix_expression
 %type <vv> iteration_statement multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression
 %type <vv> expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
+%type <zz> comp_op
 %start optimizer_start
 %%
 optimizer_start : optimizer_1;
 
-optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER LE_OP shift_expression ';'  IDENTIFIER INC')'
+optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC')'
  		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']'  ';' '}'
  		{
  			// $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;
@@ -56,12 +60,15 @@ optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER LE_OP 
 				int index_len = strlen($3.string_val);
 				int dest_len = strlen($15.string_val);
 				int orig_len = strlen($20.string_val);
-				int total_len = assig_len+shift_len+index_len+dest_len+orig_len+48;
+				int total_len = assig_len+shift_len+index_len+dest_len+orig_len+60;
 				//cblas_ccopy(const int N, const void *X, const int incX,void *Y, const int incY);
 				char *res = malloc(total_len);
 				memset(res,0,total_len);
-				snprintf(res,total_len,"cblas_ccopy(%s-%s+1,(const void*)%s,%s,(void*)%s,%s);",$5.string_exp,$9.string_exp
-							,$15.string_val,"1",$20.string_val,"1");
+				if($8.op_type == 0)
+					snprintf(res,total_len,"cblas_ccopy(%s-%s+1,(const void*)(%s+%s),%s,(void*)(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$15.string_val,"1",$20.string_val,$5.string_exp,"1");
+				else
+					snprintf(res,total_len-2,"cblas_ccopy(%s-%s,(const void*)(%s+%s),%s,(void*)(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$15.string_val,"1",$20.string_val,$5.string_exp,"1");
+
 				printf("\n---------------\nFunc : \n %s \n---------------\n",res);
 				FILE* f = fopen(OPTIMIZER_FILE,"w");
 				fprintf(f,"%s",res);
@@ -74,6 +81,14 @@ optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER LE_OP 
  				return -1;
              	};
 
+
+comp_op : LE_OP {
+	$$.op_type = 0;
+}
+	| '<' {
+	 	$$.op_type = 1;
+	}
+	;
 
 compound_statement: '{' '}' {
 

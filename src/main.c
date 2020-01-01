@@ -8,10 +8,11 @@
 extern FILE *yyin, *yyout;
 int file_exist(const char*);
 int remove_file(const char*);
+
+//extern YY_FLUSH_BUFFER;
 int main(int argc,char**argv){
     globalData.symbol = subscribe_shared_symbol("Blaster");
     int ret = -1;
-    struct shared_symbol* zz =  globalData.symbol;
     globalData.symbol->optimized = -1;
 
     display_symbol_table();
@@ -21,7 +22,10 @@ int main(int argc,char**argv){
         if(globalData.symbol->finished != 0)
             break;
         printf("[+] Optimizer Started\n");
+
         yyin = fopen(OPTIMIZER_REQUEST, "r");
+        yyrestart(yyin);
+
         //yyout = fopen(OPTIMIZER_FILE,"w");
         ret = yyparse();
         printf("ret : %d",ret);

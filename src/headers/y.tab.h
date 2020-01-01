@@ -47,6 +47,9 @@ typedef union{
 		int id_size;
 		char * string_exp;
 	}vv;
+	struct {
+		int op_type;
+	}zz;
 } YYSTYPE;
 #endif /* !YYSTYPE_IS_DECLARED */
 extern YYSTYPE yylval;
