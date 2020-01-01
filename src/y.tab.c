@@ -485,7 +485,7 @@ typedef struct {
 } YYSTACKDATA;
 /* variables for the parser stack */
 static YYSTACKDATA yystack;
-#line 464 "grammar/c_syn.y"
+#line 673 "grammar/c_syn.y"
 
 int yyerror(const char *str)
 {
@@ -700,16 +700,20 @@ case 2:
 #line 49 "grammar/c_syn.y"
 	{
  			/* $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;*/
+
+ 			printf("EXPR : %s\n",yystack.l_mark[-20].vv.string_exp);
  			if( yystack.l_mark[-22].vv.sentry == yystack.l_mark[-14].vv.sentry && yystack.l_mark[-22].vv.sentry == yystack.l_mark[-18].vv.sentry && yystack.l_mark[-22].vv.sentry == yystack.l_mark[-8].vv.sentry && yystack.l_mark[-22].vv.sentry == yystack.l_mark[-3].vv.sentry){
+ 				int assig_len = strlen(yystack.l_mark[-20].vv.string_exp);
+ 				int shift_len = strlen(yystack.l_mark[-16].vv.string_exp);
 				int index_len = strlen(yystack.l_mark[-22].vv.string_val);
 				int dest_len = strlen(yystack.l_mark[-10].vv.string_val);
 				int orig_len = strlen(yystack.l_mark[-5].vv.string_val);
-				int total_len = index_len+dest_len+orig_len+50;
+				int total_len = assig_len+shift_len+index_len+dest_len+orig_len+48;
 				/*cblas_ccopy(const int N, const void *X, const int incX,void *Y, const int incY);*/
 				char *res = malloc(total_len);
 				memset(res,0,total_len);
-				snprintf(res,total_len,"cblas_ccopy(%s,(const void*)&%s,%s,%s,%s);","SHI-ASS",yystack.l_mark[-10].vv.string_val,
-											     "1",yystack.l_mark[-5].vv.string_val,"1");
+				snprintf(res,total_len,"cblas_ccopy(%s-%s+1,(const void*)%s,%s,(void*)%s,%s);",yystack.l_mark[-20].vv.string_exp,yystack.l_mark[-16].vv.string_exp
+							,yystack.l_mark[-10].vv.string_val,"1",yystack.l_mark[-5].vv.string_val,"1");
 				printf("\n---------------\nFunc : \n %s \n---------------\n",res);
 				FILE* f = fopen(OPTIMIZER_FILE,"w");
 				fprintf(f,"%s",res);
@@ -723,107 +727,107 @@ case 2:
              	}
 break;
 case 3:
-#line 74 "grammar/c_syn.y"
+#line 78 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 4:
-#line 77 "grammar/c_syn.y"
+#line 81 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 5:
-#line 80 "grammar/c_syn.y"
+#line 84 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 6:
-#line 83 "grammar/c_syn.y"
+#line 87 "grammar/c_syn.y"
 	{
 
 
 	}
 break;
 case 7:
-#line 93 "grammar/c_syn.y"
+#line 97 "grammar/c_syn.y"
 	{
 	}
 break;
 case 8:
-#line 95 "grammar/c_syn.y"
+#line 99 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 9:
-#line 100 "grammar/c_syn.y"
+#line 104 "grammar/c_syn.y"
 	{
 	  }
 break;
 case 10:
-#line 102 "grammar/c_syn.y"
+#line 106 "grammar/c_syn.y"
 	{
 	}
 break;
 case 11:
-#line 104 "grammar/c_syn.y"
+#line 108 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 12:
-#line 107 "grammar/c_syn.y"
+#line 111 "grammar/c_syn.y"
 	{
 	}
 break;
 case 13:
-#line 111 "grammar/c_syn.y"
+#line 115 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 14:
-#line 114 "grammar/c_syn.y"
+#line 118 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 		print_list(yyval.vv.list);
 	}
 break;
 case 15:
-#line 123 "grammar/c_syn.y"
+#line 127 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 16:
-#line 126 "grammar/c_syn.y"
+#line 130 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 17:
-#line 130 "grammar/c_syn.y"
+#line 134 "grammar/c_syn.y"
 	{}
 break;
 case 18:
-#line 130 "grammar/c_syn.y"
+#line 134 "grammar/c_syn.y"
 	{}
 break;
 case 19:
-#line 132 "grammar/c_syn.y"
+#line 136 "grammar/c_syn.y"
 	{
 		return 1333;
 	}
 break;
 case 20:
-#line 136 "grammar/c_syn.y"
+#line 140 "grammar/c_syn.y"
 	{for_depth_counter_var++;}
 break;
 case 21:
-#line 141 "grammar/c_syn.y"
+#line 145 "grammar/c_syn.y"
 	{
 			/*printf("TEST ASSIGN\n");*/
         		yyval.vv.list = yystack.l_mark[0].vv.list;
@@ -831,434 +835,639 @@ case 21:
  	}
 break;
 case 22:
-#line 146 "grammar/c_syn.y"
+#line 150 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
 	}
 break;
 case 23:
-#line 152 "grammar/c_syn.y"
+#line 156 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
+		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
+
 	}
 break;
 case 24:
-#line 155 "grammar/c_syn.y"
+#line 161 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-3].vv.list,yystack.l_mark[-1].vv.list);
 		yyval.vv.list = yystack.l_mark[-3].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-3].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[-1].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s[%s]",yystack.l_mark[-3].vv.string_exp,yystack.l_mark[-1].vv.string_exp);
+		free(yystack.l_mark[-3].vv.string_exp);
+		free(yystack.l_mark[-1].vv.string_exp);
 	}
 break;
 case 25:
-#line 159 "grammar/c_syn.y"
+#line 172 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+3);
+		snprintf(yyval.vv.string_exp,len1+3, "%s()",yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+
 	}
 break;
 case 26:
-#line 162 "grammar/c_syn.y"
+#line 181 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-1].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+3);
+		snprintf(yyval.vv.string_exp,len1+3, "%s++",yystack.l_mark[-1].vv.string_exp);
+		free(yystack.l_mark[-1].vv.string_exp);
 	}
 break;
 case 27:
-#line 165 "grammar/c_syn.y"
+#line 189 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-1].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+3);
+		snprintf(yyval.vv.string_exp,len1+3, "%s--",yystack.l_mark[-1].vv.string_exp);
+		free(yystack.l_mark[-1].vv.string_exp);
 	}
 break;
 case 28:
-#line 170 "grammar/c_syn.y"
+#line 199 "grammar/c_syn.y"
 	{
 			yyval.vv.list = yystack.l_mark[0].vv.list;
+			yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 29:
-#line 173 "grammar/c_syn.y"
+#line 203 "grammar/c_syn.y"
 	{
 			yyval.vv.list = yystack.l_mark[0].vv.list;
+
+			int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+			yyval.vv.string_exp = malloc(len2+3);
+			snprintf(yyval.vv.string_exp,len2+3, "++%s",yystack.l_mark[0].vv.string_exp);
+			free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 30:
-#line 176 "grammar/c_syn.y"
+#line 211 "grammar/c_syn.y"
 	{
 			yyval.vv.list = yystack.l_mark[0].vv.list;
+
+			int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+			yyval.vv.string_exp = malloc(len2+3);
+			snprintf(yyval.vv.string_exp,len2+3, "++%s",yystack.l_mark[0].vv.string_exp);
+			free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 31:
-#line 181 "grammar/c_syn.y"
+#line 221 "grammar/c_syn.y"
 	{
 			yyval.vv.list = yystack.l_mark[0].vv.list;
+			yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 32:
-#line 184 "grammar/c_syn.y"
+#line 225 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 33:
-#line 188 "grammar/c_syn.y"
+#line 236 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 34:
-#line 192 "grammar/c_syn.y"
+#line 247 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 35:
-#line 198 "grammar/c_syn.y"
+#line 260 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
+		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 36:
-#line 201 "grammar/c_syn.y"
+#line 264 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 37:
-#line 205 "grammar/c_syn.y"
+#line 275 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 38:
-#line 211 "grammar/c_syn.y"
+#line 288 "grammar/c_syn.y"
 	{
 	yyval.vv.list = yystack.l_mark[0].vv.list;
+	yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 39:
-#line 214 "grammar/c_syn.y"
+#line 292 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 40:
-#line 218 "grammar/c_syn.y"
+#line 303 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 41:
-#line 224 "grammar/c_syn.y"
+#line 316 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
+		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 42:
-#line 227 "grammar/c_syn.y"
+#line 320 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 43:
-#line 231 "grammar/c_syn.y"
+#line 331 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 44:
-#line 235 "grammar/c_syn.y"
+#line 342 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 45:
-#line 239 "grammar/c_syn.y"
+#line 353 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 46:
-#line 245 "grammar/c_syn.y"
+#line 366 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
+		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 47:
-#line 248 "grammar/c_syn.y"
+#line 370 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 48:
-#line 252 "grammar/c_syn.y"
+#line 381 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 49:
-#line 258 "grammar/c_syn.y"
+#line 394 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
+		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 50:
-#line 261 "grammar/c_syn.y"
+#line 398 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 51:
-#line 267 "grammar/c_syn.y"
+#line 411 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
+		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 52:
-#line 270 "grammar/c_syn.y"
+#line 415 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 53:
-#line 276 "grammar/c_syn.y"
+#line 428 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
+		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 54:
-#line 279 "grammar/c_syn.y"
+#line 432 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 55:
-#line 285 "grammar/c_syn.y"
+#line 445 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
+		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 56:
-#line 288 "grammar/c_syn.y"
+#line 449 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 57:
-#line 293 "grammar/c_syn.y"
+#line 461 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
+
+		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 58:
-#line 296 "grammar/c_syn.y"
+#line 466 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+3);
+		snprintf(yyval.vv.string_exp,len1+len2+3, "%s||%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 59:
-#line 304 "grammar/c_syn.y"
+#line 481 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
+
+		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 60:
-#line 307 "grammar/c_syn.y"
+#line 486 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
+
+		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
+		int len2 = strlen(yystack.l_mark[0].vv.string_exp);
+		yyval.vv.string_exp = malloc(len1+len2+2);
+		snprintf(yyval.vv.string_exp,len1+len2+2, "%s=%s",yystack.l_mark[-2].vv.string_exp,yystack.l_mark[0].vv.string_exp);
+		free(yystack.l_mark[-2].vv.string_exp);
+		free(yystack.l_mark[-1].vv.string_exp);
+		free(yystack.l_mark[0].vv.string_exp);
 	}
 break;
 case 61:
-#line 313 "grammar/c_syn.y"
+#line 500 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 62:
-#line 320 "grammar/c_syn.y"
+#line 507 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 63:
-#line 323 "grammar/c_syn.y"
+#line 510 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-1].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 	}
 break;
 case 64:
-#line 334 "grammar/c_syn.y"
+#line 521 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 	}
 break;
 case 65:
-#line 342 "grammar/c_syn.y"
+#line 529 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 66:
-#line 349 "grammar/c_syn.y"
+#line 536 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 67:
-#line 352 "grammar/c_syn.y"
+#line 539 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 68:
-#line 355 "grammar/c_syn.y"
+#line 542 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 69:
-#line 361 "grammar/c_syn.y"
+#line 548 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 70:
-#line 364 "grammar/c_syn.y"
+#line 551 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
 	}
 break;
 case 71:
-#line 372 "grammar/c_syn.y"
+#line 559 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 72:
-#line 375 "grammar/c_syn.y"
+#line 562 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
 	}
 break;
 case 73:
-#line 384 "grammar/c_syn.y"
+#line 571 "grammar/c_syn.y"
 	{
 		push(&yyval.vv.list,yystack.l_mark[0].vv.sentry);
 	}
 break;
 case 74:
-#line 387 "grammar/c_syn.y"
+#line 574 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 75:
-#line 394 "grammar/c_syn.y"
+#line 581 "grammar/c_syn.y"
 	{
 		push(&yyval.vv.list,yystack.l_mark[0].vv.sentry);
 	}
 break;
 case 76:
-#line 397 "grammar/c_syn.y"
+#line 584 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-3].vv.list;
         }
 break;
 case 77:
-#line 408 "grammar/c_syn.y"
+#line 595 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 78:
-#line 412 "grammar/c_syn.y"
+#line 599 "grammar/c_syn.y"
 	{
 
 
 	}
 break;
 case 79:
-#line 420 "grammar/c_syn.y"
+#line 607 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 80:
-#line 423 "grammar/c_syn.y"
+#line 610 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 	}
 break;
 case 81:
-#line 428 "grammar/c_syn.y"
+#line 615 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 82:
-#line 431 "grammar/c_syn.y"
+#line 618 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
 	}
 break;
 case 83:
-#line 438 "grammar/c_syn.y"
+#line 625 "grammar/c_syn.y"
 	{
 		push(&yyval.vv.list,yystack.l_mark[0].vv.sentry);
+
+		char * curr_var_name_tmp = yystack.l_mark[0].vv.string_val;
+		int len = strlen(curr_var_name_tmp);
+		yyval.vv.string_exp = malloc(len+1);
+		snprintf(yyval.vv.string_exp,len+1, "%s",curr_var_name_tmp);
 	}
 break;
 case 84:
-#line 441 "grammar/c_syn.y"
+#line 633 "grammar/c_syn.y"
 	{
 		push(&yyval.vv.list,0);
+
+		char * curr_var_name_tmp = yystack.l_mark[0].vv.string_val;
+		int len = strlen(curr_var_name_tmp);
+		yyval.vv.string_exp = malloc(len+1);
+		snprintf(yyval.vv.string_exp,len+1, "%s",curr_var_name_tmp);
 	}
 break;
 case 85:
-#line 444 "grammar/c_syn.y"
+#line 641 "grammar/c_syn.y"
 	{
 		push(&yyval.vv.list,0);
+
+		char * curr_var_name_tmp = yystack.l_mark[0].vv.string_val;
+		int len = strlen(curr_var_name_tmp);
+		yyval.vv.string_exp = malloc(len+1);
+		snprintf(yyval.vv.string_exp,len+1, "%s",curr_var_name_tmp);
+		float a = strtof(curr_var_name_tmp, NULL);
 	}
 break;
 case 86:
-#line 447 "grammar/c_syn.y"
+#line 650 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
+
+		char * curr_var_name_tmp = yystack.l_mark[-1].vv.string_exp;
+		int len = strlen(curr_var_name_tmp);
+		yyval.vv.string_exp = malloc(len+3);
+		snprintf(yyval.vv.string_exp,len+4, "(%s)",yystack.l_mark[-1].vv.string_exp);
+		free(yystack.l_mark[-1].vv.string_exp);
 	}
 break;
 case 87:
-#line 455 "grammar/c_syn.y"
+#line 664 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 88:
-#line 458 "grammar/c_syn.y"
+#line 667 "grammar/c_syn.y"
 	{
 
 	}
 break;
-#line 1262 "y.tab.c"
+#line 1471 "y.tab.c"
     }
     yystack.s_mark -= yym;
     yystate = *yystack.s_mark;

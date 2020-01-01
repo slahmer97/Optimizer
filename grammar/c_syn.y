@@ -48,16 +48,20 @@ optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER LE_OP 
  		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']'  ';' '}'
  		{
  			// $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;
+
+ 			printf("EXPR : %s\n",$5.string_exp);
  			if( $3.sentry == $11.sentry && $3.sentry == $7.sentry && $3.sentry == $17.sentry && $3.sentry == $22.sentry){
+ 				int assig_len = strlen($5.string_exp);
+ 				int shift_len = strlen($9.string_exp);
 				int index_len = strlen($3.string_val);
 				int dest_len = strlen($15.string_val);
 				int orig_len = strlen($20.string_val);
-				int total_len = index_len+dest_len+orig_len+50;
+				int total_len = assig_len+shift_len+index_len+dest_len+orig_len+48;
 				//cblas_ccopy(const int N, const void *X, const int incX,void *Y, const int incY);
 				char *res = malloc(total_len);
 				memset(res,0,total_len);
-				snprintf(res,total_len,"cblas_ccopy(%s,(const void*)&%s,%s,%s,%s);","SHI-ASS",$15.string_val,
-											     "1",$20.string_val,"1");
+				snprintf(res,total_len,"cblas_ccopy(%s-%s+1,(const void*)%s,%s,(void*)%s,%s);",$5.string_exp,$9.string_exp
+							,$15.string_val,"1",$20.string_val,"1");
 				printf("\n---------------\nFunc : \n %s \n---------------\n",res);
 				FILE* f = fopen(OPTIMIZER_FILE,"w");
 				fprintf(f,"%s",res);
@@ -151,151 +155,324 @@ expression:
 
 postfix_expression: primary_expression {
 		$$.list = $1.list;
+		$$.string_exp = $1.string_exp;
+
 	}
 	| postfix_expression '[' expression ']' {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s[%s]",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	| postfix_expression '(' ')' {
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		$$.string_exp = malloc(len1+3);
+		snprintf($$.string_exp,len1+3, "%s()",$1.string_exp);
+		free($1.string_exp);
+
 	}
 	| postfix_expression INC {
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		$$.string_exp = malloc(len1+3);
+		snprintf($$.string_exp,len1+3, "%s++",$1.string_exp);
+		free($1.string_exp);
 	}
 	| postfix_expression DEC {
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		$$.string_exp = malloc(len1+3);
+		snprintf($$.string_exp,len1+3, "%s--",$1.string_exp);
+		free($1.string_exp);
 	}
 
 unary_expression
 	: postfix_expression {
 			$$.list = $1.list;
+			$$.string_exp = $1.string_exp;
 	}
 	| INC unary_expression {
 			$$.list = $2.list;
+
+			int len2 = strlen($2.string_exp);
+			$$.string_exp = malloc(len2+3);
+			snprintf($$.string_exp,len2+3, "++%s",$2.string_exp);
+			free($2.string_exp);
 	}
 	| DEC unary_expression {
 			$$.list = $2.list;
+
+			int len2 = strlen($2.string_exp);
+			$$.string_exp = malloc(len2+3);
+			snprintf($$.string_exp,len2+3, "++%s",$2.string_exp);
+			free($2.string_exp);
 	}
 	;
 multiplicative_expression
 	: unary_expression {
 			$$.list = $1.list;
+			$$.string_exp = $1.string_exp;
 	}
 	| multiplicative_expression '*' unary_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	| multiplicative_expression '/' unary_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	| multiplicative_expression '%' unary_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	;
 additive_expression
 	: multiplicative_expression {
 		$$.list = $1.list;
+		$$.string_exp = $1.string_exp;
 	}
 	| additive_expression '+' multiplicative_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	| additive_expression '-' multiplicative_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	;
 shift_expression
 	: additive_expression {
 	$$.list = $1.list;
+	$$.string_exp = $1.string_exp;
 	}
 	| shift_expression LEFT_OP additive_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	| shift_expression RIGHT_OP additive_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	;
 relational_expression
 	: shift_expression{
 		$$.list = $1.list;
+		$$.string_exp = $1.string_exp;
 	}
 	| relational_expression '<' shift_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	| relational_expression '>' shift_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	| relational_expression LE_OP shift_expression{
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	| relational_expression GE_OP shift_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	;
 equality_expression
 	: relational_expression{
 		$$.list = $1.list;
+		$$.string_exp = $1.string_exp;
 	}
 	| equality_expression EQ_OP relational_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	| equality_expression NE_OP relational_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	;
 and_expression
 	: equality_expression {
 		$$.list = $1.list;
+		$$.string_exp = $1.string_exp;
 	}
 	| and_expression '&' equality_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	;
 exclusive_or_expression
 	: and_expression{
 		$$.list = $1.list;
+		$$.string_exp = $1.string_exp;
 	}
 	| exclusive_or_expression '^' and_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	;
 inclusive_or_expression
 	: exclusive_or_expression {
 		$$.list = $1.list;
+		$$.string_exp = $1.string_exp;
 	}
 	| inclusive_or_expression '|' exclusive_or_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	;
 logical_and_expression
 	: inclusive_or_expression {
 		$$.list = $1.list;
+		$$.string_exp = $1.string_exp;
 	}
 	| logical_and_expression AND_OP inclusive_or_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	;
 logical_or_expression: logical_and_expression {
 		$$.list = $1.list;
+
+		$$.string_exp = $1.string_exp;
 	}
 	| logical_or_expression OR_OP logical_and_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+3);
+		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($3.string_exp);
 	}
 	;
 //TODO add conditional assignement
@@ -303,10 +480,20 @@ logical_or_expression: logical_and_expression {
 assignment_expression:
 	logical_or_expression {
 		$$.list = $1.list;
+
+		$$.string_exp = $1.string_exp;
 	}
 	| unary_expression assignment_operator assignment_expression {
 		concatenate($1.list,$3.list);
 		$$.list = $1.list;
+
+		int len1 = strlen($1.string_exp);
+		int len2 = strlen($3.string_exp);
+		$$.string_exp = malloc(len1+len2+2);
+		snprintf($$.string_exp,len1+len2+2, "%s=%s",$1.string_exp,$3.string_exp);
+		free($1.string_exp);
+		free($2.string_exp);
+		free($3.string_exp);
 	}
 	;
 assignment_operator
@@ -437,15 +624,37 @@ initializer_list
 //DONE,DONE
 primary_expression: IDENTIFIER {
 		push(&$$.list,$1.sentry);
+
+		char * curr_var_name_tmp = $1.string_val;
+		int len = strlen(curr_var_name_tmp);
+		$$.string_exp = malloc(len+1);
+		snprintf($$.string_exp,len+1, "%s",curr_var_name_tmp);
 	}
 	| CONST_INT {
 		push(&$$.list,0);
+
+		char * curr_var_name_tmp = $1.string_val;
+		int len = strlen(curr_var_name_tmp);
+		$$.string_exp = malloc(len+1);
+		snprintf($$.string_exp,len+1, "%s",curr_var_name_tmp);
 	}
 	| CONST_FLOAT {
 		push(&$$.list,0);
+
+		char * curr_var_name_tmp = $1.string_val;
+		int len = strlen(curr_var_name_tmp);
+		$$.string_exp = malloc(len+1);
+		snprintf($$.string_exp,len+1, "%s",curr_var_name_tmp);
+		float a = strtof(curr_var_name_tmp, NULL);
 	}
 	| '(' expression ')' {
 		$$.list = $2.list;
+
+		char * curr_var_name_tmp = $2.string_exp;
+		int len = strlen(curr_var_name_tmp);
+		$$.string_exp = malloc(len+3);
+		snprintf($$.string_exp,len+4, "(%s)",$2.string_exp);
+		free($2.string_exp);
 	}
 	;
 
