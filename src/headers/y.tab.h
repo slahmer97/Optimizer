@@ -108,7 +108,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 14 "grammar/c_syn.y" /* yacc.c:1921  */
+#line 15 "grammar/c_syn.y" /* yacc.c:1921  */
 
 	struct {
 		int count_p;
@@ -122,7 +122,7 @@ union YYSTYPE
 		char* string_val;
 		int type_counter;
 		node id;
-
+		struct ast* _ast;
 		char * string_exp;
 	}vv;
 

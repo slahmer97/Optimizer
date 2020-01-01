@@ -6,6 +6,7 @@
 #define OPTIMIZER_LINKEDLIST_H
 #include <stdlib.h>
 #include "symbol.h"
+#include "ast.h"
 
 struct LinkedList{
     symbol_p entry;

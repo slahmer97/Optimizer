@@ -3,6 +3,7 @@
 //
 #include <stdio.h>
 #include <zconf.h>
+#include "headers/ast.h"
 #include "headers/defs.h"
 #include "headers/linkedlist.h"
 #include "headers/symbol.h"

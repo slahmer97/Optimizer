@@ -10,6 +10,7 @@ IS			(u|U|l|L)*
 	#include "headers/linkedlist.h"
     #include "headers/symbol.h"
     #include "headers/defs.h"
+    #include "headers/ast.h"
     #include "headers/y.tab.h"
 
 	void comment(void);
