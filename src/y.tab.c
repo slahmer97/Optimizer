@@ -729,9 +729,9 @@ case 2:
 				char *res = malloc(total_len);
 				memset(res,0,total_len);
 				if(yystack.l_mark[-17].zz.op_type == 0)
-					snprintf(res,total_len,"cblas_ccopy(%s-%s+1,(%s+%s),%s,(%s+%s),%s);",yystack.l_mark[-16].vv.string_exp,yystack.l_mark[-20].vv.string_exp,yystack.l_mark[-20].vv.string_exp,yystack.l_mark[-10].vv.string_val,"1",yystack.l_mark[-5].vv.string_val,yystack.l_mark[-20].vv.string_exp,"1");
+					snprintf(res,total_len,"cblas_scopy(%s-%s+1,(%s+%s),%s,(%s+%s),%s);",yystack.l_mark[-16].vv.string_exp,yystack.l_mark[-20].vv.string_exp,yystack.l_mark[-20].vv.string_exp,yystack.l_mark[-5].vv.string_val,"1",yystack.l_mark[-10].vv.string_val,yystack.l_mark[-20].vv.string_exp,"1");
 				else
-					snprintf(res,total_len-2,"cblas_ccopy(%s-%s,(%s+%s),%s,(%s+%s),%s);",yystack.l_mark[-16].vv.string_exp,yystack.l_mark[-20].vv.string_exp,yystack.l_mark[-20].vv.string_exp,yystack.l_mark[-10].vv.string_val,"1",yystack.l_mark[-5].vv.string_val,yystack.l_mark[-20].vv.string_exp,"1");
+					snprintf(res,total_len-2,"cblas_scopy(%s-%s,(%s+%s),%s,(%s+%s),%s);",yystack.l_mark[-16].vv.string_exp,yystack.l_mark[-20].vv.string_exp,yystack.l_mark[-20].vv.string_exp,yystack.l_mark[-5].vv.string_val,"1",yystack.l_mark[-10].vv.string_val,yystack.l_mark[-20].vv.string_exp,"1");
 
 				printf("\n---------------\nFunc : \n %s \n---------------\n",res);
 				FILE* f = fopen(OPTIMIZER_FILE,"w");

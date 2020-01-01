@@ -72,9 +72,9 @@ optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_o
 				char *res = malloc(total_len);
 				memset(res,0,total_len);
 				if($8.op_type == 0)
-					snprintf(res,total_len,"cblas_scopy(%s-%s+1,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$15.string_val,"1",$20.string_val,$5.string_exp,"1");
+					snprintf(res,total_len,"cblas_scopy(%s-%s+1,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
 				else
-					snprintf(res,total_len-2,"cblas_scopy(%s-%s,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$15.string_val,"1",$20.string_val,$5.string_exp,"1");
+					snprintf(res,total_len-2,"cblas_scopy(%s-%s,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
 
 				printf("\n---------------\nFunc : \n %s \n---------------\n",res);
 				FILE* f = fopen(OPTIMIZER_FILE,"w");
