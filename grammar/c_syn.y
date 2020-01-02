@@ -41,54 +41,88 @@
 %type <vv> type_specifier declaration_specifiers primary_expression expression  compound_statement statement_list declaration_list identifier_list
 %type <vv> selection_statement pointer direct_declarator declarator init_declarator declaration init_declarator_list initializer initializer_list statement postfix_expression
 %type <vv> iteration_statement multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression
-%type <vv> expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
+%type <vv> sscale expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
 %type <zz> comp_op
 %start optimizer_start
 %%
-optimizer_start : optimizer_1;
+optimizer_start : scopy ;
 
-optimizer_1:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC')'
- 		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']'  ';' '}'
+scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC')'
+ 		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']' sscale ';' '}'
  		{
  			// $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;
 			symbol_p t = $15.sentry;
-			symbol_p z =  $20.sentry;;
-			if( t != 0 && z != 0){
-				if(!(t->glob_type == FLOAT && z->glob_type == FLOAT)){
-					printf("TYPE is not supported yet : %d",t->glob_type);
+			symbol_p z =  $20.sentry;
+			if( $24.type == 1){
+				if(z == t){
+					printf("[-] Copying vec to it self is not supported yet\n");
 					return -33;
 				}
+				if( t != 0 && z != 0){
+					if(!(t->glob_type == FLOAT && z->glob_type == FLOAT)){
+						printf("TYPE is not supported yet : %d",t->glob_type);
+						return -33;
+					}
 
-			}
- 			printf("EXPR : %s\n",$5.string_exp);
- 			if( $3.sentry == $11.sentry && $3.sentry == $7.sentry && $3.sentry == $17.sentry && $3.sentry == $22.sentry){
- 				int assig_len = strlen($5.string_exp);
- 				int shift_len = strlen($9.string_exp);
-				int index_len = strlen($3.string_val);
-				int dest_len = strlen($15.string_val);
-				int orig_len = strlen($20.string_val);
-				int total_len = assig_len+shift_len+index_len+dest_len+orig_len+32;
-				//cblas_ccopy(const int N, const void *X, const int incX,void *Y, const int incY);
-				char *res = malloc(total_len);
-				memset(res,0,total_len);
-				if($8.op_type == 0)
-					snprintf(res,total_len,"cblas_scopy(%s-%s+1,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
+				}
+				printf("EXPR : %s\n",$5.string_exp);
+				if( $3.sentry == $11.sentry && $3.sentry == $7.sentry && $3.sentry == $17.sentry && $3.sentry == $22.sentry){
+					int assig_len = strlen($5.string_exp);
+					int shift_len = strlen($9.string_exp);
+					int index_len = strlen($3.string_val);
+					int dest_len = strlen($15.string_val);
+					int orig_len = strlen($20.string_val);
+					int total_len = assig_len+shift_len+index_len+dest_len+orig_len+32;
+					//cblas_ccopy(const int N, const void *X, const int incX,void *Y, const int incY);
+					char *res = malloc(total_len);
+					memset(res,0,total_len);
+					if($8.op_type == 0)
+						snprintf(res,total_len,"cblas_scopy(%s-%s+1,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
+					else
+						snprintf(res,total_len-2,"cblas_scopy(%s-%s,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
+
+					printf("\n---------------\nFunc : \n %s \n---------------\n",res);
+					FILE* f = fopen(OPTIMIZER_FILE,"w");
+					fprintf(f,"%s",res);
+					fclose(f);
+					globalData.symbol->bytes_count = total_len;
+					free(res);
+					return 1333;
+				}
 				else
-					snprintf(res,total_len-2,"cblas_scopy(%s-%s,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
+					return -1;
 
-				printf("\n---------------\nFunc : \n %s \n---------------\n",res);
-				FILE* f = fopen(OPTIMIZER_FILE,"w");
-				fprintf(f,"%s",res);
-				fclose(f);
-				globalData.symbol->bytes_count = total_len;
-				free(res);
-				return 1333;
  			}
- 			else
- 				return -1;
+ 			else if($24.type == 2 && z == t){
+ 				node_t* head = $24.list;
+				printf("-------> head : %p\n",head);
+				while(head != 0 && head->val != $3.sentry){
+					printf("-------> %p\n",head->val);
+					head = head->next;
+				}
+				printf("-------> sentry : %p\n",$3.sentry);
+				if(head  != 0){
+ 					printf("[-] multiplication with dependence\n");
+ 					return -1;
+ 				}
+
+				printf("[-] multiplication with optimization\n");
+				return -2;
+
+ 			}
              	};
 
 
+sscale : '*' primary_expression {
+		$$.list = $2.list;
+		$$.string_exp = $2.string_exp;
+		$$.type = 2;
+	}
+	| {
+
+		$$.type = 1;
+	}
+	 ;
 comp_op : LE_OP {
 	$$.op_type = 0;
 }
@@ -165,13 +199,11 @@ iter_counter: {for_depth_counter_var++;};
 //==================================START-ASSIGNEMENT===================================================================
 expression:
  	assignment_expression {
-			//printf("TEST ASSIGN\n");
         		$$.list = $1.list;
-        		//print_list($$.list);
  	}
 	| expression ',' assignment_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
+
 	}
 	;
 
@@ -181,8 +213,7 @@ postfix_expression: primary_expression {
 
 	}
 	| postfix_expression '[' expression ']' {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -221,6 +252,7 @@ unary_expression
 	: postfix_expression {
 			$$.list = $1.list;
 			$$.string_exp = $1.string_exp;
+
 	}
 	| INC unary_expression {
 			$$.list = $2.list;
@@ -245,8 +277,7 @@ multiplicative_expression
 			$$.string_exp = $1.string_exp;
 	}
 	| multiplicative_expression '*' unary_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -256,8 +287,7 @@ multiplicative_expression
 		free($3.string_exp);
 	}
 	| multiplicative_expression '/' unary_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list =concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -267,9 +297,7 @@ multiplicative_expression
 		free($3.string_exp);
 	}
 	| multiplicative_expression '%' unary_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
-
+		$$.list  = concatenate($1.list,$3.list);
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
@@ -284,8 +312,8 @@ additive_expression
 		$$.string_exp = $1.string_exp;
 	}
 	| additive_expression '+' multiplicative_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list  = concatenate($1.list,$3.list);
+		//$$.list = $1.list;
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -295,8 +323,8 @@ additive_expression
 		free($3.string_exp);
 	}
 	| additive_expression '-' multiplicative_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
+		//$$.list = $1.list;
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -312,8 +340,8 @@ shift_expression
 	$$.string_exp = $1.string_exp;
 	}
 	| shift_expression LEFT_OP additive_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list  = concatenate($1.list,$3.list);
+		//$$.list = $1.list;
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -323,8 +351,8 @@ shift_expression
 		free($3.string_exp);
 	}
 	| shift_expression RIGHT_OP additive_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list  = concatenate($1.list,$3.list);
+		//$$.list = $1.list;
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -340,8 +368,8 @@ relational_expression
 		$$.string_exp = $1.string_exp;
 	}
 	| relational_expression '<' shift_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
+		//$$.list = $1.list;
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -351,8 +379,7 @@ relational_expression
 		free($3.string_exp);
 	}
 	| relational_expression '>' shift_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -362,8 +389,7 @@ relational_expression
 		free($3.string_exp);
 	}
 	| relational_expression LE_OP shift_expression{
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -373,8 +399,7 @@ relational_expression
 		free($3.string_exp);
 	}
 	| relational_expression GE_OP shift_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -390,8 +415,7 @@ equality_expression
 		$$.string_exp = $1.string_exp;
 	}
 	| equality_expression EQ_OP relational_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -401,8 +425,7 @@ equality_expression
 		free($3.string_exp);
 	}
 	| equality_expression NE_OP relational_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -418,8 +441,7 @@ and_expression
 		$$.string_exp = $1.string_exp;
 	}
 	| and_expression '&' equality_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -435,8 +457,7 @@ exclusive_or_expression
 		$$.string_exp = $1.string_exp;
 	}
 	| exclusive_or_expression '^' and_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -452,8 +473,7 @@ inclusive_or_expression
 		$$.string_exp = $1.string_exp;
 	}
 	| inclusive_or_expression '|' exclusive_or_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -469,8 +489,7 @@ logical_and_expression
 		$$.string_exp = $1.string_exp;
 	}
 	| logical_and_expression AND_OP inclusive_or_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -486,8 +505,7 @@ logical_or_expression: logical_and_expression {
 		$$.string_exp = $1.string_exp;
 	}
 	| logical_or_expression OR_OP logical_and_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -502,12 +520,10 @@ logical_or_expression: logical_and_expression {
 assignment_expression:
 	logical_or_expression {
 		$$.list = $1.list;
-
 		$$.string_exp = $1.string_exp;
 	}
 	| unary_expression assignment_operator assignment_expression {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
@@ -571,8 +587,7 @@ init_declarator_list
 		$$.list = $1.list;
 	}
 	| init_declarator_list ',' init_declarator {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 	}
 	;
 
@@ -582,8 +597,7 @@ init_declarator
 		$$.list = $1.list;
 	}
 	| declarator '=' initializer {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 	}
 
 	;
@@ -638,8 +652,7 @@ initializer_list
 		$$.list = $1.list;
 	}
 	| initializer_list ',' initializer {
-		concatenate($1.list,$3.list);
-		$$.list = $1.list;
+		$$.list = concatenate($1.list,$3.list);
 	}
 	;
 
@@ -654,7 +667,6 @@ primary_expression: IDENTIFIER {
 	}
 	| CONST_INT {
 		push(&$$.list,0);
-
 		char * curr_var_name_tmp = $1.string_val;
 		int len = strlen(curr_var_name_tmp);
 		$$.string_exp = malloc(len+1);
@@ -677,6 +689,7 @@ primary_expression: IDENTIFIER {
 		$$.string_exp = malloc(len+3);
 		snprintf($$.string_exp,len+4, "(%s)",$2.string_exp);
 		free($2.string_exp);
+
 	}
 	;
 

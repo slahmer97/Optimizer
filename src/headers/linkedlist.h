@@ -15,7 +15,7 @@ typedef struct node {
 
 void print_list(node_t * head);
 void push(node_t ** head, symbol_p val);
-void concatenate(node_t *a,node_t *b);
+node_t * concatenate(node_t *a,node_t *b);
 
 
 
