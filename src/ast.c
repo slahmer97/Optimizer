@@ -1,14 +1,19 @@
 //                 
 // Created by slahmer on 12/28/19.
 //
-        
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "headers/ast.h"
-            
+
+char * lvl_frmt_str = {
+    "int_vec_set(%s, %s, %s, %s);",
+    "int_vec_swap(%s, %s, %s, %s);",
+    "int_axpy(%s, %s, %s, %s, %s);",
+};
+
 ast* ast_new_operation(ast_type type, ast* left, ast* right) {
-    ast* new = malloc(sizeof(ast));
+    ast* new = (ast *) malloc(sizeof(ast));
     new->type = type;
     new->left = left;
     new->right = right;
@@ -16,7 +21,7 @@ ast* ast_new_operation(ast_type type, ast* left, ast* right) {
 }
 
 ast* ast_for_operation(ast* init, ast* condition, ast * incr, ast * core) {
-    ast* new = malloc(sizeof(ast));
+    ast* new = (ast *) malloc(sizeof(ast));
     new->type = AST_FOR;
     if (init == NULL || condition == NULL || incr == NULL || core == NULL ) {
         fprintf(stderr, "Tree value is NULL");
@@ -30,27 +35,27 @@ ast* ast_for_operation(ast* init, ast* condition, ast * incr, ast * core) {
 }
 
 ast* ast_new_unary_operation(ast_type type, ast* op) {
-    ast* new = malloc(sizeof(ast));
+    ast* new = (ast *) malloc(sizeof(ast));
     new->type = type;
     new->unary_ast = op;
     return new;
 }
             
-ast* ast_new_number(int number) {
-    ast* new = malloc(sizeof(ast));
+ast* ast_new_number(char *number) {
+    ast* new = (ast*) malloc(sizeof(ast));
     new->type = AST_NUMBER;
-    new->i_number = number;
+    new->i_number = strdup(number);
     return new;   
 }
-ast* ast_new_float(float number) {
-    ast* new = malloc(sizeof(ast));
+ast* ast_new_float(char *number) {
+    ast* new = (ast *) malloc(sizeof(ast));
     new->type = AST_FLOAT;
-    new->f_number = number;
+    new->f_number = strdup(number);
     return new;
 }
         
 ast* ast_new_id(char* id) {
-    ast* new = malloc(sizeof(ast));
+    ast* new = (ast *) malloc(sizeof(ast));
     new->type = AST_ID;
     new->id = strdup(id);
     return new;
@@ -113,7 +118,7 @@ void ast_print(ast* ast, int indent) {
             printf("ID (%s)\n", ast->id);
             break;
         case AST_NUMBER:
-            printf("NUM_I (%d)\n", ast->i_number);
+            printf("NUM_I (%s)\n", ast->i_number);
             break;
         case AST_ADD:
             printf("+\n");
@@ -125,7 +130,7 @@ void ast_print(ast* ast, int indent) {
             ast_print(ast->left, indent + 1);
             ast_print(ast->right, indent + 1);
         case AST_FLOAT:
-            printf("NUM_F (%f)\n", ast->f_number);
+            printf("NUM_F (%s)\n", ast->f_number);
             break;
         case AST_LIST:
             printf(",\n");
@@ -248,12 +253,158 @@ void ast_print(ast* ast, int indent) {
     }
 }
 
-int optimize_for(ast * for_loop) {
+char * genOperation(ast * add) {
+    char operand;
+    char *x, *y;
+
+    if (add == NULL)
+        return NULL;
+   
+    if (add->type == AST_ARR_ACCESS) {
+        x = genOperation(add->left);
+        y = genOperation(add->right);
+        
+       
+        int len1 = strlen(x);
+        int len2 = strlen(y);
+        
+        char *tmp = (char *) malloc(sizeof(char) * (len1 + len2 + 2));
+        sprintf(tmp, "%s[%s]", x, y);
+        printf("%s\n", tmp);
+        return tmp;
+    }
+
+    if (add->type == AST_MUL)
+        operand = '*';
+    if (add->type == AST_ADD) 
+        operand = '+';
+    if (add->type == AST_SUB)
+        operand = '-';
+    if (add->type == AST_DIV)
+        operand = '/';
+    if (add->type == AST_NUMBER) {
+        return add->i_number;    
+    } else if (add->type == AST_FLOAT) {
+        return add->f_number;
+    } else if (add->type == AST_ID) {
+        return add->id;
+    }
+
+    x = genOperation(add->left);
+    y = genOperation(add->right);
+    
+    int len1 = strlen(x);
+    int len2 = strlen(y);
+    char *tmp = (char *) malloc(sizeof(char) * (len1 + len2 + 1));
+    sprintf(tmp, "%s%c%s", x, operand, y);
+    printf("%s\n", tmp);
+    return tmp;
+}
+
+
+int optimize_for_lvl1(ast *for_loop) {
     if (for_loop->type != AST_FOR) {
         return -1;
     }
 
-    char *X, *Y;
-    unsigned int strideX, strideY, n;
+    char *X, *Y, *iter_id, *lo, *hi, *init_val;
+    
+    //check if init is valid:
+        //id1 = 0
+    //check if condition is valid:
+        //id1 < id2
+    //check if incr is valid: 
+        //id1++
+        //id1 = id1 + id2
+    
+    if (for_loop->init->type == AST_ASSIGN) {
+        char *left = for_loop->init->left->id;
+        iter_id = left;
+        lo = genOperation(for_loop->init->right);
+
+        if (for_loop->init->right->type != AST_NUMBER) {
+            fprintf(stderr, "error code generation (0)\n");
+            exit(EXIT_FAILURE);
+        }
+        if (lo == NULL || left == NULL) {
+            fprintf(stderr, "error code generation (1)\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (for_loop->condition->type == AST_LOWER) {
+        char *left = for_loop->condition->left->id;
+        hi = genOperation(for_loop->condition->right);
+
+       
+        if (hi == NULL || left == NULL) {
+            fprintf(stderr, "error code generation (2)\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (for_loop->condition->type == AST_LOWER_EQUAL) {
+        char *left = for_loop->condition->left->id;
+        char *tmp = genOperation(for_loop->condition->right);
+        
+        if (tmp == NULL || left == NULL) {
+            fprintf(stderr, "error code generation (3)\n");
+            exit(EXIT_FAILURE);
+        }
+       
+        int len1 = strlen(hi);
+       
+        hi = (char *) malloc(sizeof(char) * (len1 + 4));
+        sprintf(hi, "(%s)+1", tmp);
+    }
+
+    if (for_loop->incr->type == AST_ASSIGN) {
+        char *id = for_loop->incr->left->id;
+        ast *right = for_loop->incr->right;
+        if (right->type == AST_ADD) {
+            if (right->left->id == id && right->right->i_number[0] != '1') {
+                fprintf(stderr, "error code generation (4)\n");
+                exit(EXIT_FAILURE);
+            } else if (right->right->id == id && right->left->i_number[0] != '1') {
+                fprintf(stderr, "error code generation (5)\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        fflush(stdout);
+        if (strcmp(iter_id, id) != 0) {
+            fprintf(stderr, "error code generation (6)\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    //init_set id1[iter_id] = const float
+    if (for_loop->core->type == AST_ASSIGN) {
+        ast *left = for_loop->core->left;
+        ast *right = for_loop->core->right;
+        
+        if (left->type != AST_ARR_ACCESS //||
+           // right->type != AST_FLOAT
+           ) {
+            fprintf(stderr, "error code generation (7)\n");
+            exit(EXIT_FAILURE);
+        }
+
+        if (left->left == NULL || right == NULL ||
+            left->left->type != AST_ID) {
+            fprintf(stderr, "error code generation (8)\n");
+            exit(EXIT_FAILURE);
+        }
+        int len1 = strlen(left->left->id),
+            len2 = strlen(right->i_number),
+            len3 = strlen(hi),
+            len4 = strlen(lo);
+        X = left->left->id;
+        init_val = right->f_number;
+        char * res = (char *) malloc(sizeof(char) * (len1 + len2 + len4 + len3 + 20));
+
+        sprintf(res, "int_vec_set(%s, %s, %s, %s);", lo, hi, X, init_val);
+        printf("\nOPTIMIZATION: %s\n", res);
+        fflush(stdout);
+    }
     return 1;
 }

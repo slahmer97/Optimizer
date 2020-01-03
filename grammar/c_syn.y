@@ -131,7 +131,8 @@ iteration_statement:
 		}
 		printf("test: %d\n", n);
 		$$._ast = ast_for_operation($4._ast, $5._ast, $6._ast, $8._ast);
-		ast_print($$._ast, 0);
+		optimize_for_lvl1($$._ast);
+		//ast_print($$._ast, 0);
 	}
 iter_counter : {}
 //=======================================CONDITIONAL-EXPR-END===========================================================
@@ -152,18 +153,18 @@ postfix_expression: primary_expression {
 	}
 	| postfix_expression '[' expression ']' {
 		$$.id = fusion($1.id, $3.id);
-		$$._ast = ast_new_operation(AST_ARR_ACCESS, $1._ast,$3._ast);
+		$$._ast = ast_new_operation(AST_ARR_ACCESS, $1._ast, $3._ast);
 	}
 	| postfix_expression '(' ')' {
 		$$.id = $1.id;
 	}
 	| postfix_expression INC {
 		$$.id = $1.id;
-		$$._ast = ast_new_operation(AST_INC,$1._ast,0);
+		$$._ast = ast_new_operation(AST_INC, $1._ast, 0);
 	}
 	| postfix_expression DEC {
 		$$.id = $1.id;
-		$$._ast = ast_new_operation(AST_INC,$1._ast,0);
+		$$._ast = ast_new_operation(AST_INC, $1._ast, 0);
 	}
 
 unary_expression
@@ -344,6 +345,7 @@ declaration :
 
 	declaration_specifiers init_declarator_list ';' {
 		$$.id = fusion($1.id, $2.id);
+		$$._ast = ast_new_operation(AST_DEC_LIST, 0, $2._ast);
 	}
 	; //==========================================================USED
 
@@ -372,6 +374,7 @@ type_specifier
 init_declarator_list
 	: init_declarator {
 		$$.id = $1.id;
+		$$._ast = $1._ast;
 	}
 	| init_declarator_list ',' init_declarator {
 		$$.id = fusion($1.id, $3.id);
@@ -382,9 +385,11 @@ init_declarator_list
 init_declarator
 	: declarator {
 		$$.id = $1.id;
+		$$._ast = $1._ast;
 	}
 	| declarator '=' initializer {
 		$$.id = fusion($1.id, $3.id);
+		$$._ast = ast_new_operation(AST_ASSIGN, $1._ast, $3._ast);
 	}
 
 	;
@@ -439,14 +444,17 @@ pointer
 initializer
 	: assignment_expression {
 		$$.id = $1.id;
+		$$._ast = $1._ast;
 	}
 	| '{' initializer_list '}' {
 		$$.id = $2.id;
+		$$._ast = $2._ast;
 	}
 	;
 initializer_list
 	: initializer {
 		$$.id = $1.id;
+		$$._ast = $1._ast;
 	}
 	| initializer_list ',' initializer {
 		$$.id = fusion($1.id, $3.id);
@@ -462,13 +470,11 @@ primary_expression: IDENTIFIER {
 	}
 	| CONST_INT {
 		$$.id = (node) 0;
-		int tmp = atoi($1.string_val);
-		$$._ast = ast_new_number(tmp);
+		$$._ast = ast_new_number($1.string_val);
 	}
 	| CONST_FLOAT {
 		$$.id = (node) 0;
-		int tmp = atof($1.string_val);
-		$$._ast = ast_new_float(tmp);
+		$$._ast = ast_new_float($1.string_val);
 	}
 	| '(' expression ')' {
 		$$.id = $2.id;
