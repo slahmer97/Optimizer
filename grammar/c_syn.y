@@ -53,6 +53,7 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
  			// $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;
 			symbol_p t = $15.sentry;
 			symbol_p z =  $20.sentry;
+			char *res;
 			if( $24.type == 1){
 				if(z == t){
 					printf("[-] Copying vec to it self is not supported yet\n");
@@ -66,19 +67,19 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
 
 				}
 				printf("EXPR : %s\n",$5.string_exp);
+				int assig_len = strlen($5.string_exp);
+				int shift_len = strlen($9.string_exp);
+				int index_len = strlen($3.string_val);
+				int dest_len = strlen($15.string_val);
+				int orig_len = strlen($20.string_val);
+				int total_len = assig_len+shift_len+index_len+dest_len+orig_len+32;
 				if( $3.sentry == $11.sentry && $3.sentry == $7.sentry && $3.sentry == $17.sentry && $3.sentry == $22.sentry){
-					int assig_len = strlen($5.string_exp);
-					int shift_len = strlen($9.string_exp);
-					int index_len = strlen($3.string_val);
-					int dest_len = strlen($15.string_val);
-					int orig_len = strlen($20.string_val);
-					int total_len = assig_len+shift_len+index_len+dest_len+orig_len+32;
 					//cblas_ccopy(const int N, const void *X, const int incX,void *Y, const int incY);
-					char *res = malloc(total_len);
+					res = malloc(total_len);
 					memset(res,0,total_len);
 					if($8.op_type == 0)
 						snprintf(res,total_len,"cblas_scopy(%s-%s+1,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
-					else
+					else if($8.op_type == 1)
 						snprintf(res,total_len-2,"cblas_scopy(%s-%s,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
 
 					printf("\n---------------\nFunc : \n %s \n---------------\n",res);
@@ -105,10 +106,28 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
  					printf("[-] multiplication with dependence\n");
  					return -1;
  				}
+ 				else{
+					perror("OPTIMIZER\n");
+ 				}
 
-				printf("[-] multiplication with optimization\n");
-				return -2;
+				//void cblas_sscal(const int size, const float alpha, float *X, const int incX);
+				int total_len = 60+strlen($5.string_exp)+strlen($9.string_exp)+strlen($15.string_val)+strlen($24.string_exp);
+				perror("OPTIMIZER2\n");
+				char *res = malloc(total_len);
+				perror("OPTIMIZER3\n");
+				if($8.op_type == 0)
+					snprintf(res,total_len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$9.string_exp,$5.string_exp,$24.string_exp,$15.string_val);
+				else if($8.op_type == 1)
+					snprintf(res,total_len-2,"cblas_sscal((const int)%s-%s,(const float)%s,%s,1);",$9.string_exp,$5.string_exp,$24.string_exp,$15.string_val);
 
+
+				printf("\n---------------\nFunc : \n %s \n---------------\n",res);
+				FILE* f = fopen(OPTIMIZER_FILE,"w");
+				fprintf(f,"%s",res);
+				fclose(f);
+				globalData.symbol->bytes_count = total_len;
+				free(res);
+				return 1333;
  			}
              	};
 
