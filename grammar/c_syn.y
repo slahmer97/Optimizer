@@ -56,12 +56,12 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
 			char *res;
 			if( $24.type == 1){
 				if(z == t){
-					printf("[-] Copying vec to it self is not supported yet\n");
+					perror("[-] Copying vec to it self is not supported yet\n");
 					return -33;
 				}
 				if( t != 0 && z != 0){
 					if(!(t->glob_type == FLOAT && z->glob_type == FLOAT)){
-						printf("TYPE is not supported yet : %d",t->glob_type);
+						perror("[-] TYPE is not supported yet ");//: %d",t->glob_type);
 						return -33;
 					}
 
@@ -83,6 +83,7 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
 						snprintf(res,total_len-2,"cblas_scopy(%s-%s,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
 
 					printf("\n---------------\nFunc : \n %s \n---------------\n",res);
+					perror("[+] Optimization copy\n");
 					FILE* f = fopen(OPTIMIZER_FILE,"w");
 					fprintf(f,"%s",res);
 					fclose(f);
@@ -90,9 +91,17 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
 					free(res);
 					return 1333;
 				}
-				else
-					return -1;
+				else if ($22.sentry != $3.sentry && $20.sentry != $3.sentry ){
 
+					// init_vec(t,N,expr);
+
+					perror("[+] Optimization init vec\n");
+					return 1333;
+				}
+				else{
+					printf("[-] init dependence !\n");
+					return -1;
+				}
  			}
  			else if($24.type == 2 && z == t){
  				node_t* head = $24.list;
@@ -103,18 +112,16 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
 				}
 				printf("-------> sentry : %p\n",$3.sentry);
 				if(head  != 0){
- 					printf("[-] multiplication with dependence\n");
+ 					perror("[-] multiplication with dependence\n");
  					return -1;
  				}
  				else{
-					perror("OPTIMIZER\n");
+					perror("[+] optimization found sscale\n");
  				}
 
 				//void cblas_sscal(const int size, const float alpha, float *X, const int incX);
 				int total_len = 60+strlen($5.string_exp)+strlen($9.string_exp)+strlen($15.string_val)+strlen($24.string_exp);
-				perror("OPTIMIZER2\n");
 				char *res = malloc(total_len);
-				perror("OPTIMIZER3\n");
 				if($8.op_type == 0)
 					snprintf(res,total_len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$9.string_exp,$5.string_exp,$24.string_exp,$15.string_val);
 				else if($8.op_type == 1)
