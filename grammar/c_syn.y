@@ -45,15 +45,21 @@
 %type <zz> comp_op
 %start optimizer_start
 %%
-optimizer_start : scopy ;
+optimizer_start : rule11 | rule12;
 
-scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC')'
+rule11:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC')'
  		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']' sscale ';' '}'
+ 		//   15             17                                     20             22           24
  		{
  			// $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;
 			symbol_p t = $15.sentry;
 			symbol_p z =  $20.sentry;
 			char *res;
+			int assig_len = strlen($5.string_exp);
+			int shift_len = strlen($9.string_exp);
+			int index_len = strlen($3.string_val);
+			int dest_len = strlen($15.string_val);
+			int orig_len = strlen($20.string_val);
 			if( $24.type == 1){
 				if(z == t){
 					perror("[-] Copying vec to it self is not supported yet\n");
@@ -67,11 +73,6 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
 
 				}
 				printf("EXPR : %s\n",$5.string_exp);
-				int assig_len = strlen($5.string_exp);
-				int shift_len = strlen($9.string_exp);
-				int index_len = strlen($3.string_val);
-				int dest_len = strlen($15.string_val);
-				int orig_len = strlen($20.string_val);
 				int total_len = assig_len+shift_len+index_len+dest_len+orig_len+32;
 				if( $3.sentry == $11.sentry && $3.sentry == $7.sentry && $3.sentry == $17.sentry && $3.sentry == $22.sentry){
 					//cblas_ccopy(const int N, const void *X, const int incX,void *Y, const int incY);
@@ -89,13 +90,26 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
 					fclose(f);
 					globalData.symbol->bytes_count = total_len;
 					free(res);
+					perror("Optimization 93");
 					return 1333;
 				}
 				else if ($22.sentry != $3.sentry && $20.sentry != $3.sentry ){
 
 					// init_vec(t,N,expr);
+					int lenn = assig_len*2+shift_len+dest_len+orig_len+strlen($22.string_val)+35;
+					res = malloc(lenn);
+					memset(res,0,lenn);
+					if($8.op_type == 0)
+						snprintf(res,lenn,"init_fvec(%s-%s+1,(float*)(%s+%s),%s[%s]);",$9.string_exp,$5.string_exp,$15.string_val,$5.string_exp,$20.string_val,$22.string_val);
+					else if($8.op_type == 1)
+						snprintf(res,lenn-2,"init_fvec(%s-%s,(float*)(%s+%s),%s[%s]);",$9.string_exp,$5.string_exp,$15.string_val,$5.string_exp,$20.string_val,$22.string_val);
 
-					perror("[+] Optimization init vec\n");
+					FILE* f = fopen(OPTIMIZER_FILE,"w");
+					fprintf(f,"%s",res);
+					fclose(f);
+					globalData.symbol->bytes_count = lenn;
+					free(res);
+					perror("Optimization 111");
 					return 1333;
 				}
 				else{
@@ -103,7 +117,8 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
 					return -1;
 				}
  			}
- 			else if($24.type == 2 && z == t){
+ 			else if($24.type == 2){
+
  				node_t* head = $24.list;
 				printf("-------> head : %p\n",head);
 				while(head != 0 && head->val != $3.sentry){
@@ -115,10 +130,32 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
  					perror("[-] multiplication with dependence\n");
  					return -1;
  				}
- 				else{
-					perror("[+] optimization found sscale\n");
+
+ 				if(z != t){
+ 					if($22.sentry != $3.sentry){
+						// init_vec(t,N,expr);
+						int lenn = assig_len*2+shift_len+dest_len+orig_len+strlen($22.string_val)+strlen($24.string_val)+100;
+						res = malloc(lenn);
+						memset(res,0,lenn);
+						if($8.op_type == 0)
+							snprintf(res,lenn,"init_fvec(%s-%s+1,(float*)(%s+%s),%s[%s]*%s);",$9.string_exp,$5.string_exp,$15.string_val,$5.string_exp,$20.string_val,$22.string_val,$24.string_exp);
+						else if($8.op_type == 1)
+							snprintf(res,lenn-2,"init_fvec(%s-%s,(float*)(%s+%s),%s[%s]*%s);",$9.string_exp,$5.string_exp,$15.string_val,$5.string_exp,$20.string_val,$22.string_val,$24.string_exp);
+						FILE* f = fopen(OPTIMIZER_FILE,"w");
+						fprintf(f,"%s",res);
+						fclose(f);
+						globalData.symbol->bytes_count = lenn;
+						free(res);
+						perror("Optimization 147");
+						return 1333;
+					}
+					else{
+						perror("[-] init_vec dependecy found\n");
+						return -1;
+					}
  				}
 
+				perror("[+] optimization found sscale\n");
 				//void cblas_sscal(const int size, const float alpha, float *X, const int incX);
 				int total_len = 60+strlen($5.string_exp)+strlen($9.string_exp)+strlen($15.string_val)+strlen($24.string_exp);
 				char *res = malloc(total_len);
@@ -135,6 +172,7 @@ scopy:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shif
 				globalData.symbol->bytes_count = total_len;
 				free(res);
 				return 1333;
+				perror("Optimization 173");
  			}
              	};
 
@@ -149,6 +187,9 @@ sscale : '*' primary_expression {
 		$$.type = 1;
 	}
 	 ;
+
+rule12: FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC')'
+         		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator logical_or_expression ';' '}'
 comp_op : LE_OP {
 	$$.op_type = 0;
 }
