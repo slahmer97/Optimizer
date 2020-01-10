@@ -23,6 +23,7 @@
 #define DEC 279
 #define LEFT_OP 280
 #define RIGHT_OP 281
+#define identifier_list 282
 #ifdef YYSTYPE
 #undef  YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1
@@ -46,6 +47,15 @@ typedef union{
 		char *n;
 		int id_size;
 		char * string_exp;
+
+
+
+		symbol_p vec;
+		char* left;
+		char* right;
+		unsigned short index_dep : 1;
+		unsigned short exp_dep : 1;
+		int depth;
 	}vv;
 	struct {
 		int op_type;

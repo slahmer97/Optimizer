@@ -8,13 +8,13 @@
 
 void print_list(node_t * head) {
     node_t * current = head;
-    printf("--------------------\n");
+    //printf("--------------------\n");
     while (current != NULL) {
         symbol_p tmp =  current->val;
-        printf("%s\t",tmp->name);
+        //printf("%s\t",tmp->name);
         current = current->next;
     }
-    printf("\n-----------------------\n");
+   // printf("\n-----------------------\n");
 }
 void push(node_t ** head, symbol_p val) {
     if(val == 0)
@@ -39,4 +39,19 @@ node_t * concatenate(node_t *a,node_t *b)
             concatenate(a->next,b);
     }
     return a;
+}
+
+
+int dep_exist(symbol_p val,node_t*list){
+    node_t* head = list;
+    //printf("-------> head : %p\n",head);
+    while(head != 0 && head->val != val){
+        //printf("-------> %p\n",head->val);
+        head = head->next;
+    }
+    if(head  != 0){
+        perror("[-] Found dependence\n");
+        return 1;
+    }
+    return 0;
 }

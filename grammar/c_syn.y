@@ -7,6 +7,11 @@
 	int for_depth_counter_var = 0;
 	int direct_declarator_var = 0;
 	int current_type_var = -1;
+
+	symbol_p index_sentry;
+
+
+	int do_gen = 1;
     //int yydebug = 1;
 %}
 %union{
@@ -26,6 +31,15 @@
 		char *n;
 		int id_size;
 		char * string_exp;
+
+
+
+		symbol_p vec;
+		char* left;
+		char* right;
+		unsigned short index_dep : 1;
+		unsigned short exp_dep : 1;
+		int depth;
 	}vv;
 	struct {
 		int op_type;
@@ -41,12 +55,102 @@
 %type <vv> type_specifier declaration_specifiers primary_expression expression  compound_statement statement_list declaration_list identifier_list
 %type <vv> selection_statement pointer direct_declarator declarator init_declarator declaration init_declarator_list initializer initializer_list statement postfix_expression
 %type <vv> iteration_statement multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression
-%type <vv> sscale expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
+%type <vv> optimization1_1 sscale expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
 %type <zz> comp_op
 %start optimizer_start
 %%
-optimizer_start : rule11 | rule12;
+optimizer_start : optimization1 ;//| rule11;
 
+
+optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
+	//       1   2     3		4
+		'=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC ')'
+	//       5       6                 7      8          9       10            11     12       13   14
+		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator optimization1_1 ';' '}'
+	//       15  16         17  18         19       20                21            22  23
+		{
+			if(index_sentry != $12.sentry || index_sentry != $8.sentry){
+				perror("[-] loop doesn't follow optimization crits \n");
+				return -1234;
+			}
+			char *res;
+			int len ;
+			if($21.type == 1){
+				if($21.vec == $16.sentry){
+					//scaling....
+					perror("OPTIMIZATION : IDENTIFIER '[' IDENTIFIER ']' = IDENTIFIER '[' IDENTIFIER ']' '*' primary_expression \n");
+					len = strlen($6.string_val)+strlen($10.string_val)+strlen($21.right)+strlen($21.left)+50;
+					res = malloc(len);
+					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_val,$6.string_val,$21.right,$21.left);
+					write_res(res,len);
+					free(res);
+					return 1333;
+				}
+
+
+
+
+
+
+
+
+			}
+
+
+			index_sentry = 0;
+		}
+
+
+optimization1_1 :
+ 		IDENTIFIER '[' IDENTIFIER ']' '*' primary_expression{
+			$$.type = 1;
+			$$.depth = 0;
+			$$.index_dep = 0;
+			if($3.sentry == index_sentry){
+				$$.index_dep = 1;
+			}
+			$$.exp_dep = dep_exist(index_sentry,$6.list);
+
+			int left_len = strlen($1.string_val)+strlen($3.string_val);
+			$$.left = malloc(left_len+3);
+			snprintf($$.left,left_len,"%s[%s]",$1.string_val,$3.string_val);
+
+			$$.right = $6.string_exp;
+			$$.vec = $1.sentry;
+
+		}
+		| IDENTIFIER '[' IDENTIFIER ']' {
+				perror("IDENTIFIER '[' IDENTIFIER ']'\n");
+			$$.type = 2;
+			$$.depth = 0;
+
+		}
+		| primary_expression '*' IDENTIFIER '[' IDENTIFIER ']' {
+
+			perror("primary_expression '*' IDENTIFIER '[' IDENTIFIER ']' \n");
+			$$.type = 3;
+			$$.depth = 0;
+
+
+		}
+		| logical_or_expression {
+			perror("Logical or expr \n");
+			$$.type = 4;
+			$$.depth = 0;
+
+
+		}
+		| optimization1_1 '+' optimization1_1 {
+			$$.type = 5;
+			$$.depth = ($1.depth > $3.depth)?$1.depth:$3.depth;
+			$$.depth = $$.depth+1;
+			if($$.depth > 1){
+				perror("depth is greater than 1");
+				return -144;
+			}
+			perror("optimization1_1 '+' optimization1_1 \n");
+
+		}
 rule11:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC')'
  		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']' sscale ';' '}'
  		//   15             17                                     20             22           24
@@ -175,21 +279,16 @@ rule11:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shi
 				perror("Optimization 173");
  			}
              	};
-
-
 sscale : '*' primary_expression {
 		$$.list = $2.list;
 		$$.string_exp = $2.string_exp;
 		$$.type = 2;
 	}
 	| {
-
 		$$.type = 1;
 	}
 	 ;
 
-rule12: FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC')'
-         		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator logical_or_expression ';' '}'
 comp_op : LE_OP {
 	$$.op_type = 0;
 }
@@ -240,7 +339,7 @@ expression_statement: ';' {
 	}
 	| expression ';' {
 		$$.list = $1.list;
-		print_list($$.list);
+		//print_list($$.list);
 	}
 	;
 
@@ -349,7 +448,7 @@ multiplicative_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s*%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -359,7 +458,7 @@ multiplicative_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s/%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -368,7 +467,7 @@ multiplicative_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+5, "%s %% %s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -385,7 +484,7 @@ additive_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+2, "%s+%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -396,7 +495,7 @@ additive_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+2, "%s-%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -413,7 +512,7 @@ shift_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s<<%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -424,7 +523,7 @@ shift_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s>>%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -441,7 +540,7 @@ relational_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s<%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -451,7 +550,7 @@ relational_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s>%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -461,7 +560,7 @@ relational_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s<=%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -471,7 +570,7 @@ relational_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s>=%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -487,7 +586,7 @@ equality_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s==%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -497,7 +596,7 @@ equality_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s!=%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -513,7 +612,7 @@ and_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+2, "%s&%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -529,7 +628,7 @@ exclusive_or_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+2, "%s^%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -545,7 +644,7 @@ inclusive_or_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+2, "%s|%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -561,7 +660,7 @@ logical_and_expression
 		int len1 = strlen($1.string_exp);
 		int len2 = strlen($3.string_exp);
 		$$.string_exp = malloc(len1+len2+3);
-		snprintf($$.string_exp,len1+len2+3, "%s||%s",$1.string_exp,$3.string_exp);
+		snprintf($$.string_exp,len1+len2+3, "%s&&%s",$1.string_exp,$3.string_exp);
 		free($1.string_exp);
 		free($3.string_exp);
 	}
@@ -762,14 +861,7 @@ primary_expression: IDENTIFIER {
 
 
 //DONE,DONE
-identifier_list
-	: IDENTIFIER {
 
-	}
-	| identifier_list ',' IDENTIFIER {
-
-	}
-	;
 
 %%
 

@@ -63,7 +63,12 @@ struct shared_symbol* subscribe_shared_symbol(char*name){
     return ret;
 }
 
-
+void write_res(char* res,int len){
+    FILE* f = fopen(OPTIMIZER_FILE,"w");
+    fprintf(f,"%s",res);
+    fclose(f);
+    globalData.symbol->bytes_count = len;
+}
 int add_symbol_entry(symbol_p p){
     symbol_p tmp = 0;
     int ret = lookup_symbol_entry(p->name,&tmp);
