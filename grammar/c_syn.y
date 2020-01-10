@@ -87,9 +87,9 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 					free(res);
 					return 1333;
 				}
-				else {
+				else if($21.index_sentry != 0 && $21.index_sentry != index_sentry){
 					perror("init_vec 1 \n");
-					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+strlen($21.right)+40;
+					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+strlen($21.right)+45;
 					perror("strlen done\n");
 					res = malloc(len);
 					memset(res,0,len);

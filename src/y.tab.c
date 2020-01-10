@@ -775,9 +775,9 @@ case 3:
 					free(res);
 					return 1333;
 				}
-				else {
+				else if(yystack.l_mark[-2].vv.index_sentry != 0 && yystack.l_mark[-2].vv.index_sentry != index_sentry){
 					perror("init_vec 1 \n");
-					len = strlen(yystack.l_mark[-13].vv.string_exp)+strlen(yystack.l_mark[-17].vv.string_exp)+strlen(yystack.l_mark[-7].vv.string_val)+strlen(yystack.l_mark[-17].vv.string_exp)+strlen(yystack.l_mark[-2].vv.left)+strlen(yystack.l_mark[-2].vv.right)+40;
+					len = strlen(yystack.l_mark[-13].vv.string_exp)+strlen(yystack.l_mark[-17].vv.string_exp)+strlen(yystack.l_mark[-7].vv.string_val)+strlen(yystack.l_mark[-17].vv.string_exp)+strlen(yystack.l_mark[-2].vv.left)+strlen(yystack.l_mark[-2].vv.right)+45;
 					perror("strlen done\n");
 					res = malloc(len);
 					memset(res,0,len);
