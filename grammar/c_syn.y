@@ -101,9 +101,81 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 					free(res);
 					return 1333;
 				}
+				else {
+					perror("init dependece 1 \n");
+					return -123;
+				}
 			}
+			if($21.type == 2){
+				perror("IDENTIFIER '[' IDENTIFIER ']'\n");
+				if($21.vec != $16.sentry && $21.index_sentry != 0 && $21.index_sentry == index_sentry ){
+					//scopy
+					perror("Scopy optimization \n");
+					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($21.vec->name)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+50;
+					res = malloc(len);
+					memset(res,0,len);
+					snprintf(res,len,"cblas_scopy((const int)%s-%s+1,%s+%s,1,%s+%s,1);",$10.string_exp,$6.string_exp,$21.vec->name,$6.string_exp,$16.string_val,$6.string_exp);
+					write_res(res,len);
+					free(res);
+					return 1333;
 
+				}
+				else if( $21.index_sentry != 0 && $21.index_sentry != index_sentry){
+					perror("init_vec2  \n");
+					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+45;
+					res = malloc(len);
+					memset(res,0,len);
+					perror($21.left);
+					snprintf(res,len,"init_fvec(%s-%s+1,%s+%s,(const float)%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.left);
+					write_res(res,len);
+					free(res);
+					return 1333;
+				}
+				else{
+					perror("init dependece 2 \n");
+					return -123;
+				}
 
+			}
+			else if($21.type == 3){
+				if($21.vec == $16.sentry && $21.index_sentry != 0 && $21.index_sentry == index_sentry ){
+					//scaling....
+					perror("Scaling optimization 3\n");
+					len = 100;//strlen($6.string_exp)+strlen($10.string_exp)+strlen($21.right)+strlen($21.left)+50;
+					res = malloc(len);
+					memset(res,0,len);
+					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.left,$21.vec->name);
+					write_res(res,len);
+					free(res);
+					return 1333;
+				}
+				else if($21.index_sentry != 0 && $21.index_sentry != index_sentry){
+					perror("init_vec 3 \n");
+					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+strlen($21.right)+45;
+					res = malloc(len);
+					memset(res,0,len);
+					snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s*%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.right,$21.left);
+					perror("sprintf done\n");
+					write_res(res,len);
+					free(res);
+					return 1333;
+				}
+				else {
+					perror("init dependece 3 \n");
+					return -123;
+				}
+			}
+			else if($21.type == 5){
+					perror("init_vec 5 \n");
+					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+45;
+					res = malloc(len);
+					memset(res,0,len);
+					snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.left);
+					perror("sprintf done\n");
+					write_res(res,len);
+					free(res);
+					return 1333;
+			}
 			index_sentry = 0;
 		}
 
@@ -131,28 +203,45 @@ optimization1_1 :
 
 		}
 		| IDENTIFIER '[' IDENTIFIER ']' {
-				perror("IDENTIFIER '[' IDENTIFIER ']'\n");
 			$$.type = 2;
 			$$.depth = 0;
 
+			$$.vec = $1.sentry;
+			$$.index_sentry = $3.sentry;
+
+
+			int left_len = strlen($1.string_val)+strlen($3.string_val)+3;
+			printf("left len : %d\n",left_len);
+			$$.left = malloc(left_len);
+			memset($$.left,0,left_len);
+			snprintf($$.left,left_len,"%s[%s]",$1.string_val,$3.string_val);
+			printf("left len : %d\n",left_len);
 		}
 		| primary_expression '*' IDENTIFIER '[' IDENTIFIER ']' {
 
 			perror("primary_expression '*' IDENTIFIER '[' IDENTIFIER ']' \n");
 			$$.type = 3;
 			$$.depth = 0;
-
-
-		}
-		| logical_or_expression {
-			perror("Logical or expr \n");
-			$$.type = 4;
-			$$.depth = 0;
-
-
+			$$.index_dep = 0;
+			if($3.sentry == index_sentry){
+				$$.index_dep = 1;
+			}
+			$$.exp_dep = dep_exist(index_sentry,$1.list);
+			if($$.exp_dep == 1){
+				perror("[-] left multplication dependence exist \n");
+				return -1233;
+			}
+			int right_len = strlen($3.string_val)+strlen($5.string_val)+3;
+			$$.right = malloc(right_len);
+			memset($$.right,0,right_len);
+			snprintf($$.right,right_len,"%s[%s]",$3.string_val,$5.string_val);
+			perror("passed sprintf\n");
+			$$.left = $1.string_val;
+			$$.vec = $3.sentry;
+			$$.index_sentry = $5.sentry;
 		}
 		| optimization1_1 '+' optimization1_1 {
-			$$.type = 5;
+			$$.type = 4;
 			$$.depth = ($1.depth > $3.depth)?$1.depth:$3.depth;
 			$$.depth = $$.depth+1;
 			if($$.depth > 1){
@@ -161,6 +250,19 @@ optimization1_1 :
 			}
 			perror("optimization1_1 '+' optimization1_1 \n");
 
+		}
+		| assignment_expression {
+			perror("Logical or expr \n");
+			$$.type = 5;
+			$$.depth = 0;
+
+			int op = dep_exist(index_sentry,$1.list);
+			if(op == 1){
+				perror("init logical expr failed\n");
+				return -123;
+			}
+
+			$$.left = $1.string_exp;
 		}
 rule11:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC')'
  		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']' sscale ';' '}'
