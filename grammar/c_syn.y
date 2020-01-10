@@ -33,7 +33,7 @@
 		char * string_exp;
 
 
-
+		symbol_p index_sentry;
 		symbol_p vec;
 		char* left;
 		char* right;
@@ -52,7 +52,7 @@
 %token '='
 %token '(' ')' ';' '}' '{' ']' '[' '/' '*' '+' '-' '<' '>' '%'
 %token AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP INC DEC LEFT_OP RIGHT_OP
-%type <vv> type_specifier declaration_specifiers primary_expression expression  compound_statement statement_list declaration_list identifier_list
+%type <vv> type_specifier declaration_specifiers primary_expression expression  compound_statement statement_list declaration_list
 %type <vv> selection_statement pointer direct_declarator declarator init_declarator declaration init_declarator_list initializer initializer_list statement postfix_expression
 %type <vv> iteration_statement multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression
 %type <vv> optimization1_1 sscale expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
@@ -76,24 +76,31 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 			char *res;
 			int len ;
 			if($21.type == 1){
-				if($21.vec == $16.sentry){
+				if($21.vec == $16.sentry && $21.index_sentry != 0 && $21.index_sentry == index_sentry ){
 					//scaling....
-					perror("OPTIMIZATION : IDENTIFIER '[' IDENTIFIER ']' = IDENTIFIER '[' IDENTIFIER ']' '*' primary_expression \n");
-					len = strlen($6.string_val)+strlen($10.string_val)+strlen($21.right)+strlen($21.left)+50;
+					perror("Scaling optimization \n");
+					len = strlen($6.string_exp)+strlen($10.string_exp)+strlen($21.right)+strlen($21.left)+50;
 					res = malloc(len);
-					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_val,$6.string_val,$21.right,$21.left);
+					memset(res,0,len);
+					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.right,$21.left);
 					write_res(res,len);
 					free(res);
 					return 1333;
 				}
-
-
-
-
-
-
-
-
+				else {
+					perror("init_vec 1 \n");
+					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+strlen($21.right)+40;
+					perror("strlen done\n");
+					res = malloc(len);
+					memset(res,0,len);
+					perror("malloc done\n");
+					snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s*%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.left,$21.right);
+					perror("sprintf done\n");
+					write_res(res,len);
+					perror("write done\n");
+					free(res);
+					return 1333;
+				}
 			}
 
 
@@ -110,13 +117,17 @@ optimization1_1 :
 				$$.index_dep = 1;
 			}
 			$$.exp_dep = dep_exist(index_sentry,$6.list);
-
+			if($$.exp_dep == 1){
+				perror("[-] multplication dependence exist \n");
+				return -1233;
+			}
 			int left_len = strlen($1.string_val)+strlen($3.string_val);
 			$$.left = malloc(left_len+3);
 			snprintf($$.left,left_len,"%s[%s]",$1.string_val,$3.string_val);
 
 			$$.right = $6.string_exp;
 			$$.vec = $1.sentry;
+			$$.index_sentry = $3.sentry;
 
 		}
 		| IDENTIFIER '[' IDENTIFIER ']' {
