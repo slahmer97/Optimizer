@@ -9,8 +9,9 @@
 	int current_type_var = -1;
 
 	symbol_p index_sentry;
-
-
+	symbol_p index_1_entry;
+	symbol_p index_2_entry;
+	symbol_p arr_id;
 	int do_gen = 1;
     //int yydebug = 1;
 %}
@@ -32,9 +33,8 @@
 		int id_size;
 		char * string_exp;
 
-
-
-
+		symbol_p i;
+		symbol_p j;
 
 		symbol_p index_sentry;
 		symbol_p vec;
@@ -59,11 +59,81 @@
 %type <vv> type_specifier declaration_specifiers primary_expression expression  compound_statement statement_list declaration_list
 %type <vv> selection_statement pointer direct_declarator declarator init_declarator declaration init_declarator_list initializer initializer_list statement postfix_expression
 %type <vv> iteration_statement multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression
-%type <vv> optimization1_1 sscale expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
+%type <vv> optimization1_1 optimization2_1 sscale expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
 %type <zz> comp_op
 %start optimizer_start
 %%
-optimizer_start : optimization1 ;//| rule11;
+optimizer_start : optimization1 | optimization2 ;//| rule11;
+
+optimization2:  FOR '(' IDENTIFIER {index_1_entry = $3.sentry;} '=' assignment_expression ';' IDENTIFIER comp_op 
+		//        1  2     3             4                       5     6                   7      8         9   		
+				  
+				shift_expression ';'  IDENTIFIER INC ')'  '{' 
+		//			10            11    12        13  14   15
+					FOR '(' IDENTIFIER {index_2_entry = $18.sentry;} '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC ')' 
+		//           16  17     18                   19               20        21             22    23          24        25          26       27    28  29                              
+					'{' IDENTIFIER {arr_id = $31.sentry;} '[' IDENTIFIER ']' '[' IDENTIFIER ']'   assignment_operator optimization2_1 ';'
+		//			 30   31              32              33     34      35  36    37       38            39			   40
+					'}'
+				'}'			
+				{
+					perror("matrix optimization 2\n");
+
+					if ($8.sentry != index_1_entry || $12.sentry != index_1_entry) {
+						perror("[-] loop doesn't follow optimization crits \n");
+						return -1234;
+					}
+
+					if ($23.sentry != index_2_entry || $27.sentry != index_2_entry) {
+						perror("[-] loop doesn't follow optimization crits \n");
+						return -1234;
+					}
+
+					if ($34.sentry != index_1_entry || $37.sentry != index_2_entry) {
+						perror("[-] loop doesn't follow optimization crits \n");
+						return -1234;
+					}
+
+					if (arr_id == index_2_entry || arr_id == index_1_entry) {
+						perror("[-] loop doesn't follow optimization crits \n");
+						return -1234;
+					}
+
+					char *res;
+					int len;
+					if ($40.type == 1) {
+						printf("MATRIX COPY\n");
+						if ($31.sentry != $40.vec && $40.i == index_1_entry && $40.j == index_2_entry) {
+
+							perror("Matrix copy optimization \n");
+							char *x =  $31.string_val;
+							char *y =  $40.vec->name;
+
+							len = strlen($10.string_exp) + strlen($6.string_exp) + strlen(x) + strlen(y) + 27 + strlen($25.string_exp) + strlen($21.string_exp);
+							res = (char *) malloc(sizeof(char) * len);
+							memset(res, 0, len);
+							snprintf(res, len, "matrix_copy(%s-%s+1, %s-%s+1, %s, %s);", $10.string_exp, $6.string_exp, $25.string_exp, $21.string_exp, x, y);
+							write_res(res, len);
+							free(res);
+							return 1333;
+						} else {
+
+							perror("Matrix Initialization \n");
+							char *x =  $31.string_val;
+							char *y =  $40.string_exp;
+
+							len = strlen($10.string_exp) + strlen($6.string_exp) + strlen(x) + strlen(y) + 27 + strlen($25.string_exp) + strlen($21.string_exp);
+							res = (char *) malloc(sizeof(char) * len);
+							snprintf(res, len, "matrix_init(%s-%s+1, %s-%s+1, %s, %s);", $10.string_exp, $6.string_exp, $25.string_exp, $21.string_exp, y, x);
+							write_res(res, len);
+							free(res);
+							return 1333;
+						}
+					} else if ($40.type == 2) {
+						printf("MATRIX SCALE\n");
+					}
+				}
+
 
 
 optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
@@ -297,6 +367,43 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 			index_sentry = 0;
 		}
 
+optimization2_1: 
+	IDENTIFIER '[' IDENTIFIER ']' '[' IDENTIFIER ']' {
+		$$.type  = 1; 
+		
+		$$.depth = 0;
+		$$.index_dep = 0;
+		
+		if ($3.sentry == index_1_entry && $6.sentry == index_2_entry) {
+			$$.i = $3.sentry;
+			$$.j = $6.sentry;
+		} else if ($3.sentry != index_1_entry && $6.sentry != index_2_entry) {
+			$$.i = 0;
+			$$.j = 0;
+		} else {
+			perror("[-] unable to optimize \n");
+			return -1;
+		}
+		$$.vec = $1.sentry;
+		int len = strlen($1.string_val) + strlen($3.string_val) + strlen($6.string_val) + 5;
+		$$.string_exp = (char *) malloc(sizeof(char) * len);
+		memset($$.string_exp, 0, len);
+		snprintf($$.string_exp, len, "%s[%s][%s]", $1.string_val, $3.string_val, $6.string_val);
+	}
+	| IDENTIFIER '[' IDENTIFIER ']' '[' IDENTIFIER ']' '*' primary_expression {
+		$$.type = 2;
+		
+		if ($3.sentry == index_1_entry && $6.sentry == index_2_entry) {
+			$$.i = $3.sentry;
+			$$.j = $6.sentry;
+		} else {
+			perror("[-] unable to optimize \n");
+			return -1;
+		}
+		$$.vec = $1.sentry;
+		$$.string_exp = $9.string_exp;
+	}
+	;
 
 optimization1_1 :
  		IDENTIFIER '[' IDENTIFIER ']' '*' primary_expression{
