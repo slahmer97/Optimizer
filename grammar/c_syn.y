@@ -522,16 +522,43 @@ optimization1_1 :
 				}
 
 			}
+			else if($1.type == 2 && $3.type == 3){
+				// X = Z + a*W
+				perror("2-3\n");
+				$$.vec = $1.vec;
+				$$.vec2 = $3.vec;
+				if($1.index_sentry == index_sentry &&  $3.index_sentry == index_sentry){
+					if($1.vec == $1.vec2){
+						perror("--------> 41 optimization can't be done\n");
+						return -1;
+					}
+					perror("--------> 41 optimization \n");
+					$$.type = 41;
+					$$.index_sentry = $1.index_sentry;
+					$$.left = 0;
+					$$.right =  $3.left;
+				}
+				else if($1.index_sentry != index_sentry && $3.index_sentry != index_sentry){
+					perror("--------> 42 optimization \n");
+					$$.type = 42;
+					int len = strlen($1.left)+strlen($3.left)+strlen($3.right)+6;
+					$$.left = malloc(len);
+					memset($$.left,0,len);
+					snprintf($$.left,len,"%s+%s*%s",$1.left,$3.right,$3.left);
+				}
+				else{
+					perror("optimization + optimization dependence 1\n");
+					return -1;
+				}
+
+			}
 			else{
 				perror("not yet implemented wait a while please!\n");
 				return -123;
 			}
 			/*
 
-			else ($1.type == 2 && $3.type == 3){
 
-
-			}
 			else ($1.type == 3 && $3.type == 3){
 
 
