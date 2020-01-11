@@ -77,8 +77,9 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 				perror("[-] loop doesn't follow optimization crits \n");
 				return -1234;
 			}
-			char *res;
+			char *res,*res1,*res2;
 			int len ;
+			int len2;
 			if($21.type == 1){
 				if($21.vec == $16.sentry && $21.index_sentry != 0 && $21.index_sentry == index_sentry ){
 					//scaling....
@@ -195,10 +196,10 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 					res = malloc(len);
 					memset(res,0,len);
 					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.left,$16.string_val);
-					int len2 = strlen($6.string_exp)+strlen($21.left)+strlen($16.string_val)*2+70;
-					char* res2 = malloc(len2);
+					len2 = strlen($6.string_exp)+strlen($21.left)+strlen($16.string_val)*2+70;
+					res2 = malloc(len2);
 					snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.right,$16.string_val,$16.string_val);
-					char* res1 = malloc(len+len2+3);
+					res1 = malloc(len+len2+3);
 					snprintf(res1,len+len2+3,"%s%s",res,res2);
 					printf("%s\n",res1);
 					write_res(res1,len+len2+3);
@@ -208,9 +209,59 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 
 				}
 				else if($16.sentry == $21.vec && $16.sentry != $21.vec2){
-					//y = y*a + x*b
-					perror("y = y*a+x*b =D \n");
-					return -1;
+					if($21.left != 0 && $21.right != 0){
+						perror("Z = Z*a+Y*b =D \n");
+						len = strlen($6.string_exp)+strlen($10.string_exp)+strlen($21.left)+strlen($16.string_val)+50;
+						res = malloc(len);
+						memset(res,0,len);
+						snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.left,$16.string_val);
+						len2 = strlen($6.string_exp)+strlen($21.right)+strlen($16.string_val)*2+70;
+						res2 = malloc(len2);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.right,$21.vec2->name,$16.string_val);
+						res1 = malloc(len+len2+3);
+						snprintf(res1,len+len2+3,"%s%s",res,res2);
+						printf("%s\n",res1);
+						write_res(res1,len+len2+3);
+						free(res);
+						free(res1);
+						free(res2);
+					}
+					else if($21.left == 0 && $21.right != 0){
+						perror("Z = Z +Y*b =D \n");
+						len2 = strlen($6.string_exp)+strlen($21.right)+strlen($16.string_val)*2+70;
+						res2 = malloc(len2);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.right,$21.vec2->name,$16.string_val);
+						write_res(res2,len2);
+						printf("%s\n",res2);
+						free(res2);
+					}
+					else if($21.left != 0 && $21.right == 0){
+						perror("Z = Z*a +Y =D \n");
+						len = strlen($6.string_exp)+strlen($10.string_exp)+strlen($21.left)+strlen($16.string_val)+50;
+						res = malloc(len);
+						memset(res,0,len);
+						snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.left,$16.string_val);
+						len2 = strlen($6.string_exp)+strlen($16.string_val)*2+55;
+						res2 = malloc(len2);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,1.0,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.vec2->name,$16.string_val);
+						res1 = malloc(len+len2+3);
+						snprintf(res1,len+len2+3,"%s%s",res,res2);
+						printf("%s\n",res1);
+						write_res(res1,len+len2+3);
+						printf("%s\n",res1);
+						free(res);
+						free(res1);
+						free(res2);
+
+					}
+					else {
+						perror("optmization unknown \n");
+						return -123;
+					}
+
+
+
+					return 1333;
 				}
 				else{
 					//y = x*a + y*b
@@ -358,7 +409,8 @@ optimization1_1 :
 					perror("--------> 43 optimization \n");
 					$$.index_sentry = $1.index_sentry;
 					$$.left = $1.right;
-					$$.type = 43;
+					$$.right = 0;
+					$$.type = 41;
 				}
 				else if($1.index_sentry != index_sentry && $3.index_sentry != index_sentry){
 					perror("--------> condition 44 optimization \n");
