@@ -296,6 +296,8 @@ level1 : a a a a a a a a a a a a a a a
 }
 
 //===============ATTENTION if you modifie this or add anything make sure you fixed the index of all variables..if you fuck it don't tell me it's doesn't work.==============
+//CHANGE level1 to another rule that will give level1 or the inner loop of your part
+// if you wish to access outer index in init use : ,  outer op_index use op_index var; for outer inc index use inc_index......
 optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 	//       1   2     3		4
 		'=' assignment_expression {assig_exp = $6.string_exp;}';' IDENTIFIER {op_index =$9.sentry; } comp_op shift_expression {sh_exp = $12.string_exp;}';'  IDENTIFIER{inc_index=$15.sentry;} INC ')'
