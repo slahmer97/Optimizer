@@ -85,7 +85,7 @@ level1 : a a a a a a a a a a a a a a a
 					len = strlen(assig_exp)+strlen(sh_exp)+strlen($21.right)+strlen($21.left)+50;
 					res = malloc(len);
 					memset(res,0,len);
-					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,$21.right,$21.left);
+					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,$21.right,$16.string_val);
 					write_res(res,len);
 					free(res);
 					return 1333;
@@ -363,7 +363,7 @@ optimization1_1 :
 			memset($$.right,0,right_len);
 			snprintf($$.right,right_len,"%s[%s]",$3.string_val,$5.string_val);
 			perror("passed sprintf\n");
-			$$.left = $1.string_val;
+			$$.left = $1.string_exp;
 			$$.vec = $3.sentry;
 			$$.index_sentry = $5.sentry;
 		}

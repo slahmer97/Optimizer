@@ -563,7 +563,7 @@ typedef struct {
 } YYSTACKDATA;
 /* variables for the parser stack */
 static YYSTACKDATA yystack;
-#line 1382 "grammar/c_syn.y"
+#line 1385 "grammar/c_syn.y"
 
 int yyerror(const char *str)
 {
@@ -791,7 +791,7 @@ case 3:
 					len = strlen(assig_exp)+strlen(sh_exp)+strlen(yystack.l_mark[-1].vv.right)+strlen(yystack.l_mark[-1].vv.left)+50;
 					res = malloc(len);
 					memset(res,0,len);
-					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,yystack.l_mark[-1].vv.right,yystack.l_mark[-1].vv.left);
+					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,yystack.l_mark[-1].vv.right,yystack.l_mark[-6].vv.string_val);
 					write_res(res,len);
 					free(res);
 					return 1333;
@@ -1002,27 +1002,27 @@ case 3:
 }
 break;
 case 4:
-#line 298 "grammar/c_syn.y"
+#line 301 "grammar/c_syn.y"
 	{index_sentry = yystack.l_mark[0].vv.sentry;}
 break;
 case 5:
-#line 300 "grammar/c_syn.y"
+#line 303 "grammar/c_syn.y"
 	{assig_exp = yystack.l_mark[0].vv.string_exp;}
 break;
 case 6:
-#line 300 "grammar/c_syn.y"
+#line 303 "grammar/c_syn.y"
 	{op_index =yystack.l_mark[0].vv.sentry; }
 break;
 case 7:
-#line 300 "grammar/c_syn.y"
+#line 303 "grammar/c_syn.y"
 	{sh_exp = yystack.l_mark[0].vv.string_exp;}
 break;
 case 8:
-#line 300 "grammar/c_syn.y"
+#line 303 "grammar/c_syn.y"
 	{inc_index=yystack.l_mark[0].vv.sentry;}
 break;
 case 10:
-#line 307 "grammar/c_syn.y"
+#line 310 "grammar/c_syn.y"
 	{
 			yyval.vv.type = 1;
 			yyval.vv.depth = 0;
@@ -1047,7 +1047,7 @@ case 10:
 		}
 break;
 case 11:
-#line 329 "grammar/c_syn.y"
+#line 332 "grammar/c_syn.y"
 	{
 			yyval.vv.type = 2;
 			yyval.vv.depth = 0;
@@ -1065,7 +1065,7 @@ case 11:
 		}
 break;
 case 12:
-#line 344 "grammar/c_syn.y"
+#line 347 "grammar/c_syn.y"
 	{
 
 			perror("primary_expression '*' IDENTIFIER '[' IDENTIFIER ']' \n");
@@ -1085,13 +1085,13 @@ case 12:
 			memset(yyval.vv.right,0,right_len);
 			snprintf(yyval.vv.right,right_len,"%s[%s]",yystack.l_mark[-3].vv.string_val,yystack.l_mark[-1].vv.string_val);
 			perror("passed sprintf\n");
-			yyval.vv.left = yystack.l_mark[-5].vv.string_val;
+			yyval.vv.left = yystack.l_mark[-5].vv.string_exp;
 			yyval.vv.vec = yystack.l_mark[-3].vv.sentry;
 			yyval.vv.index_sentry = yystack.l_mark[-1].vv.sentry;
 		}
 break;
 case 13:
-#line 367 "grammar/c_syn.y"
+#line 370 "grammar/c_syn.y"
 	{
 			yyval.vv.type = 4;
 			yyval.vv.depth = (yystack.l_mark[-2].vv.depth > yystack.l_mark[0].vv.depth)?yystack.l_mark[-2].vv.depth:yystack.l_mark[0].vv.depth;
@@ -1383,7 +1383,7 @@ case 13:
 		}
 break;
 case 14:
-#line 656 "grammar/c_syn.y"
+#line 659 "grammar/c_syn.y"
 	{
 			perror("Logical or expr \n");
 			yyval.vv.type = 5;
@@ -1399,7 +1399,7 @@ case 14:
 		}
 break;
 case 15:
-#line 672 "grammar/c_syn.y"
+#line 675 "grammar/c_syn.y"
 	{
  			/* $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;*/
 			symbol_p t = yystack.l_mark[-11].vv.sentry;
@@ -1527,7 +1527,7 @@ case 15:
              	}
 break;
 case 16:
-#line 797 "grammar/c_syn.y"
+#line 800 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
@@ -1535,138 +1535,138 @@ case 16:
 	}
 break;
 case 17:
-#line 802 "grammar/c_syn.y"
+#line 805 "grammar/c_syn.y"
 	{
 		yyval.vv.type = 1;
 	}
 break;
 case 18:
-#line 807 "grammar/c_syn.y"
+#line 810 "grammar/c_syn.y"
 	{
 	yyval.zz.op_type = 0;
 }
 break;
 case 19:
-#line 810 "grammar/c_syn.y"
+#line 813 "grammar/c_syn.y"
 	{
 	 	yyval.zz.op_type = 1;
 	}
 break;
 case 20:
-#line 815 "grammar/c_syn.y"
-	{
-
-	}
-break;
-case 21:
 #line 818 "grammar/c_syn.y"
 	{
 
 	}
 break;
-case 22:
+case 21:
 #line 821 "grammar/c_syn.y"
 	{
 
 	}
 break;
-case 23:
+case 22:
 #line 824 "grammar/c_syn.y"
+	{
+
+	}
+break;
+case 23:
+#line 827 "grammar/c_syn.y"
 	{
 
 
 	}
 break;
 case 24:
-#line 834 "grammar/c_syn.y"
+#line 837 "grammar/c_syn.y"
 	{
 	}
 break;
 case 25:
-#line 836 "grammar/c_syn.y"
+#line 839 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 26:
-#line 841 "grammar/c_syn.y"
+#line 844 "grammar/c_syn.y"
 	{
 	  }
 break;
 case 27:
-#line 843 "grammar/c_syn.y"
+#line 846 "grammar/c_syn.y"
 	{
 	}
 break;
 case 28:
-#line 845 "grammar/c_syn.y"
+#line 848 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 29:
-#line 848 "grammar/c_syn.y"
+#line 851 "grammar/c_syn.y"
 	{
 	}
 break;
 case 30:
-#line 852 "grammar/c_syn.y"
+#line 855 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 31:
-#line 855 "grammar/c_syn.y"
+#line 858 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 		/*print_list($$.list);*/
 	}
 break;
 case 32:
-#line 864 "grammar/c_syn.y"
-	{
-
-	}
-break;
-case 33:
 #line 867 "grammar/c_syn.y"
 	{
 
 	}
 break;
+case 33:
+#line 870 "grammar/c_syn.y"
+	{
+
+	}
+break;
 case 34:
-#line 871 "grammar/c_syn.y"
+#line 874 "grammar/c_syn.y"
 	{}
 break;
 case 35:
-#line 871 "grammar/c_syn.y"
+#line 874 "grammar/c_syn.y"
 	{}
 break;
 case 36:
-#line 873 "grammar/c_syn.y"
+#line 876 "grammar/c_syn.y"
 	{
 		return 1333;
 	}
 break;
 case 37:
-#line 877 "grammar/c_syn.y"
+#line 880 "grammar/c_syn.y"
 	{for_depth_counter_var++;}
 break;
 case 38:
-#line 882 "grammar/c_syn.y"
+#line 885 "grammar/c_syn.y"
 	{
         		yyval.vv.list = yystack.l_mark[0].vv.list;
  	}
 break;
 case 39:
-#line 885 "grammar/c_syn.y"
+#line 888 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
 	}
 break;
 case 40:
-#line 891 "grammar/c_syn.y"
+#line 894 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
@@ -1674,7 +1674,7 @@ case 40:
 	}
 break;
 case 41:
-#line 896 "grammar/c_syn.y"
+#line 899 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-3].vv.list,yystack.l_mark[-1].vv.list);
 
@@ -1687,7 +1687,7 @@ case 41:
 	}
 break;
 case 42:
-#line 906 "grammar/c_syn.y"
+#line 909 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-2].vv.list;
 
@@ -1699,7 +1699,7 @@ case 42:
 	}
 break;
 case 43:
-#line 915 "grammar/c_syn.y"
+#line 918 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 
@@ -1710,7 +1710,7 @@ case 43:
 	}
 break;
 case 44:
-#line 923 "grammar/c_syn.y"
+#line 926 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 
@@ -1721,7 +1721,7 @@ case 44:
 	}
 break;
 case 45:
-#line 933 "grammar/c_syn.y"
+#line 936 "grammar/c_syn.y"
 	{
 			yyval.vv.list = yystack.l_mark[0].vv.list;
 			yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
@@ -1729,7 +1729,7 @@ case 45:
 	}
 break;
 case 46:
-#line 938 "grammar/c_syn.y"
+#line 941 "grammar/c_syn.y"
 	{
 			yyval.vv.list = yystack.l_mark[0].vv.list;
 
@@ -1740,7 +1740,7 @@ case 46:
 	}
 break;
 case 47:
-#line 946 "grammar/c_syn.y"
+#line 949 "grammar/c_syn.y"
 	{
 			yyval.vv.list = yystack.l_mark[0].vv.list;
 
@@ -1751,14 +1751,14 @@ case 47:
 	}
 break;
 case 48:
-#line 956 "grammar/c_syn.y"
+#line 959 "grammar/c_syn.y"
 	{
 			yyval.vv.list = yystack.l_mark[0].vv.list;
 			yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 49:
-#line 960 "grammar/c_syn.y"
+#line 963 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -1771,7 +1771,7 @@ case 49:
 	}
 break;
 case 50:
-#line 970 "grammar/c_syn.y"
+#line 973 "grammar/c_syn.y"
 	{
 		yyval.vv.list =concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -1784,7 +1784,7 @@ case 50:
 	}
 break;
 case 51:
-#line 980 "grammar/c_syn.y"
+#line 983 "grammar/c_syn.y"
 	{
 		yyval.vv.list  = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		int len1 = strlen(yystack.l_mark[-2].vv.string_exp);
@@ -1796,14 +1796,14 @@ case 51:
 	}
 break;
 case 52:
-#line 991 "grammar/c_syn.y"
+#line 994 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 53:
-#line 995 "grammar/c_syn.y"
+#line 998 "grammar/c_syn.y"
 	{
 		yyval.vv.list  = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		/*$$.list = $1.list;*/
@@ -1817,7 +1817,7 @@ case 53:
 	}
 break;
 case 54:
-#line 1006 "grammar/c_syn.y"
+#line 1009 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		/*$$.list = $1.list;*/
@@ -1831,14 +1831,14 @@ case 54:
 	}
 break;
 case 55:
-#line 1019 "grammar/c_syn.y"
+#line 1022 "grammar/c_syn.y"
 	{
 	yyval.vv.list = yystack.l_mark[0].vv.list;
 	yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 56:
-#line 1023 "grammar/c_syn.y"
+#line 1026 "grammar/c_syn.y"
 	{
 		yyval.vv.list  = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		/*$$.list = $1.list;*/
@@ -1852,7 +1852,7 @@ case 56:
 	}
 break;
 case 57:
-#line 1034 "grammar/c_syn.y"
+#line 1037 "grammar/c_syn.y"
 	{
 		yyval.vv.list  = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		/*$$.list = $1.list;*/
@@ -1866,14 +1866,14 @@ case 57:
 	}
 break;
 case 58:
-#line 1047 "grammar/c_syn.y"
+#line 1050 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 59:
-#line 1051 "grammar/c_syn.y"
+#line 1054 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 		/*$$.list = $1.list;*/
@@ -1887,7 +1887,7 @@ case 59:
 	}
 break;
 case 60:
-#line 1062 "grammar/c_syn.y"
+#line 1065 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -1900,7 +1900,7 @@ case 60:
 	}
 break;
 case 61:
-#line 1072 "grammar/c_syn.y"
+#line 1075 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -1913,7 +1913,7 @@ case 61:
 	}
 break;
 case 62:
-#line 1082 "grammar/c_syn.y"
+#line 1085 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -1926,14 +1926,14 @@ case 62:
 	}
 break;
 case 63:
-#line 1094 "grammar/c_syn.y"
+#line 1097 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 64:
-#line 1098 "grammar/c_syn.y"
+#line 1101 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -1946,7 +1946,7 @@ case 64:
 	}
 break;
 case 65:
-#line 1108 "grammar/c_syn.y"
+#line 1111 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -1959,14 +1959,14 @@ case 65:
 	}
 break;
 case 66:
-#line 1120 "grammar/c_syn.y"
+#line 1123 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 67:
-#line 1124 "grammar/c_syn.y"
+#line 1127 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -1979,14 +1979,14 @@ case 67:
 	}
 break;
 case 68:
-#line 1136 "grammar/c_syn.y"
+#line 1139 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 69:
-#line 1140 "grammar/c_syn.y"
+#line 1143 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -1999,14 +1999,14 @@ case 69:
 	}
 break;
 case 70:
-#line 1152 "grammar/c_syn.y"
+#line 1155 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 71:
-#line 1156 "grammar/c_syn.y"
+#line 1159 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -2019,14 +2019,14 @@ case 71:
 	}
 break;
 case 72:
-#line 1168 "grammar/c_syn.y"
+#line 1171 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 73:
-#line 1172 "grammar/c_syn.y"
+#line 1175 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -2039,7 +2039,7 @@ case 73:
 	}
 break;
 case 74:
-#line 1183 "grammar/c_syn.y"
+#line 1186 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 
@@ -2047,7 +2047,7 @@ case 74:
 	}
 break;
 case 75:
-#line 1188 "grammar/c_syn.y"
+#line 1191 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -2060,14 +2060,14 @@ case 75:
 	}
 break;
 case 76:
-#line 1202 "grammar/c_syn.y"
+#line 1205 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 		yyval.vv.string_exp = yystack.l_mark[0].vv.string_exp;
 	}
 break;
 case 77:
-#line 1206 "grammar/c_syn.y"
+#line 1209 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 
@@ -2081,141 +2081,141 @@ case 77:
 	}
 break;
 case 78:
-#line 1219 "grammar/c_syn.y"
+#line 1222 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 79:
-#line 1226 "grammar/c_syn.y"
+#line 1229 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 80:
-#line 1229 "grammar/c_syn.y"
+#line 1232 "grammar/c_syn.y"
 	{
 		concatenate(yystack.l_mark[-1].vv.list,yystack.l_mark[0].vv.list);
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 	}
 break;
 case 81:
-#line 1240 "grammar/c_syn.y"
+#line 1243 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 	}
 break;
 case 82:
-#line 1248 "grammar/c_syn.y"
+#line 1251 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 83:
-#line 1255 "grammar/c_syn.y"
-	{
-
-	}
-break;
-case 84:
 #line 1258 "grammar/c_syn.y"
 	{
 
 	}
 break;
-case 85:
+case 84:
 #line 1261 "grammar/c_syn.y"
 	{
 
 	}
 break;
+case 85:
+#line 1264 "grammar/c_syn.y"
+	{
+
+	}
+break;
 case 86:
-#line 1267 "grammar/c_syn.y"
+#line 1270 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 87:
-#line 1270 "grammar/c_syn.y"
+#line 1273 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 	}
 break;
 case 88:
-#line 1277 "grammar/c_syn.y"
+#line 1280 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 89:
-#line 1280 "grammar/c_syn.y"
+#line 1283 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 	}
 break;
 case 90:
-#line 1288 "grammar/c_syn.y"
+#line 1291 "grammar/c_syn.y"
 	{
 		push(&yyval.vv.list,yystack.l_mark[0].vv.sentry);
 	}
 break;
 case 91:
-#line 1291 "grammar/c_syn.y"
+#line 1294 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 92:
-#line 1298 "grammar/c_syn.y"
+#line 1301 "grammar/c_syn.y"
 	{
 		push(&yyval.vv.list,yystack.l_mark[0].vv.sentry);
 	}
 break;
 case 93:
-#line 1301 "grammar/c_syn.y"
+#line 1304 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-3].vv.list;
         }
 break;
 case 94:
-#line 1312 "grammar/c_syn.y"
+#line 1315 "grammar/c_syn.y"
 	{
 
 	}
 break;
 case 95:
-#line 1316 "grammar/c_syn.y"
+#line 1319 "grammar/c_syn.y"
 	{
 
 
 	}
 break;
 case 96:
-#line 1324 "grammar/c_syn.y"
+#line 1327 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 97:
-#line 1327 "grammar/c_syn.y"
+#line 1330 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 	}
 break;
 case 98:
-#line 1332 "grammar/c_syn.y"
+#line 1335 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[0].vv.list;
 	}
 break;
 case 99:
-#line 1335 "grammar/c_syn.y"
+#line 1338 "grammar/c_syn.y"
 	{
 		yyval.vv.list = concatenate(yystack.l_mark[-2].vv.list,yystack.l_mark[0].vv.list);
 	}
 break;
 case 100:
-#line 1341 "grammar/c_syn.y"
+#line 1344 "grammar/c_syn.y"
 	{
 		push(&yyval.vv.list,yystack.l_mark[0].vv.sentry);
 
@@ -2226,7 +2226,7 @@ case 100:
 	}
 break;
 case 101:
-#line 1349 "grammar/c_syn.y"
+#line 1352 "grammar/c_syn.y"
 	{
 		push(&yyval.vv.list,0);
 		char * curr_var_name_tmp = yystack.l_mark[0].vv.string_val;
@@ -2236,7 +2236,7 @@ case 101:
 	}
 break;
 case 102:
-#line 1356 "grammar/c_syn.y"
+#line 1359 "grammar/c_syn.y"
 	{
 		push(&yyval.vv.list,0);
 
@@ -2248,7 +2248,7 @@ case 102:
 	}
 break;
 case 103:
-#line 1365 "grammar/c_syn.y"
+#line 1368 "grammar/c_syn.y"
 	{
 		yyval.vv.list = yystack.l_mark[-1].vv.list;
 
