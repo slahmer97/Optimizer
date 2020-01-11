@@ -80,12 +80,9 @@ struct shared_symbol* subscribe_shared_symbol(char*name);
 void unsubscribe_shared_symbol();
 
 
-<<<<<<< HEAD
-=======
 
 void write_res(char* res,int len);
 
->>>>>>> master
 /**
  *              Insertion symbol into tsymbol
  *
