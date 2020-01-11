@@ -48,8 +48,12 @@ typedef union{
 		char * string_exp;
 
 
+
+
+
 		symbol_p index_sentry;
 		symbol_p vec;
+		symbol_p vec2;
 		char* left;
 		char* right;
 		unsigned short index_dep : 1;

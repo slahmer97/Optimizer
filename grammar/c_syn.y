@@ -33,8 +33,12 @@
 		char * string_exp;
 
 
+
+
+
 		symbol_p index_sentry;
 		symbol_p vec;
+		symbol_p vec2;
 		char* left;
 		char* right;
 		unsigned short index_dep : 1;
@@ -166,15 +170,76 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 				}
 			}
 			else if($21.type == 5){
-					perror("init_vec 5 \n");
-					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+45;
+				perror("init_vec 5 \n");
+				len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+45;
+				res = malloc(len);
+				memset(res,0,len);
+				snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.left);
+				perror("sprintf done\n");
+				write_res(res,len);
+				free(res);
+				return 1333;
+			}
+			else if($21.type == 41){
+				perror("axy 6 \n");
+				//cblas_saxpy(const int size, const float alpha, const float *X,const int incX, float *Y, const int incY);
+				//y = a*x + y
+				if($16.sentry == $21.vec && $16.sentry == $21.vec2){
+					//y = y*a + y*b
+					// 1 - y = y * a
+					// 2 - y = y + y *b
+					perror("y = y*a+y*b :/ can't be done \n");
+					return -1;
+					//TODO delete later
+					len = strlen($6.string_exp)+strlen($10.string_exp)+strlen($21.left)+strlen($16.string_val)+50;
 					res = malloc(len);
 					memset(res,0,len);
-					snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.left);
-					perror("sprintf done\n");
-					write_res(res,len);
+					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.left,$16.string_val);
+					int len2 = strlen($6.string_exp)+strlen($21.left)+strlen($16.string_val)*2+70;
+					char* res2 = malloc(len2);
+					snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.right,$16.string_val,$16.string_val);
+					char* res1 = malloc(len+len2+3);
+					snprintf(res1,len+len2+3,"%s%s",res,res2);
+					printf("%s\n",res1);
+					write_res(res1,len+len2+3);
 					free(res);
-					return 1333;
+					free(res1);
+					free(res2);
+
+				}
+				else if($16.sentry == $21.vec && $16.sentry != $21.vec2){
+					//y = y*a + x*b
+					perror("y = y*a+x*b =D \n");
+					return -1;
+				}
+				else{
+					//y = x*a + y*b
+					perror("y = x*a+y*b =D \n");
+					return -1;
+				}
+				return 1333;
+
+			}
+			else if($21.type == 42){
+				perror("init_vec 6 \n");
+				if($16.sentry == $21.vec || $16.sentry == $21.vec2){
+					perror("optimization 42 can't be done :/ \n");
+					return -1;
+				}
+				len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+55;
+				res = malloc(len);
+				memset(res,0,len);
+				snprintf(res,len,"init_fvec((const int)%s-%s+1,(float*)(%s+%s),(const float)%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.left);
+				perror("sprintf done\n");
+				write_res(res,len);
+				free(res);
+				return 1333;
+			}
+			else if($21.type == 43){
+
+
+
+
 			}
 			index_sentry = 0;
 		}
@@ -193,8 +258,9 @@ optimization1_1 :
 				perror("[-] multplication dependence exist \n");
 				return -1233;
 			}
-			int left_len = strlen($1.string_val)+strlen($3.string_val);
-			$$.left = malloc(left_len+3);
+			int left_len = strlen($1.string_val)+strlen($3.string_val)+4;
+			$$.left = malloc(left_len);
+			memset($$.left,0,left_len);
 			snprintf($$.left,left_len,"%s[%s]",$1.string_val,$3.string_val);
 
 			$$.right = $6.string_exp;
@@ -249,6 +315,103 @@ optimization1_1 :
 				return -144;
 			}
 			perror("optimization1_1 '+' optimization1_1 \n");
+
+			if($1.type == 1 && $3.type == 1){
+				//three cases axy,init,dependence error.
+				$$.vec = $1.vec;
+				$$.vec2 = $3.vec;
+				if($1.index_sentry == index_sentry &&  $3.index_sentry == index_sentry){
+					if($1.vec == $1.vec2){
+						perror("--------> 41 optimization can't be done\n");
+						return -1;
+					}
+					perror("--------> 41 optimization \n");
+					$$.type = 41;
+					$$.index_sentry = $1.index_sentry;
+					$$.left = $1.right;
+					$$.right = $3.right;
+					//to perform axy  y = a*x + y
+				}
+				else if($1.index_sentry != index_sentry && $3.index_sentry != index_sentry){
+					perror("--------> 42 optimization \n");
+					$$.type = 42;
+					int len = strlen($1.left)+strlen($1.right)+strlen($3.left)+strlen($3.right)+6;
+					$$.left = malloc(len);
+					memset($$.left,0,len);
+					snprintf($$.left,len,"%s*%s+%s*%s",$1.left,$1.right,$3.left,$3.right);
+
+				}
+				else{
+					perror("optimization + optimization dependence 1\n");
+					return -1;
+				}
+			}
+			else if($1.type == 1 && $3.type == 2){
+				// Z = X*a + Y ..
+				$$.vec = $1.vec;
+				$$.vec2 = $3.vec;
+				if($1.index_sentry == index_sentry &&  $3.index_sentry == index_sentry){
+					if($1.vec == $1.vec2){
+						perror("--------> 41 optimization can't be done\n");
+						return -1;
+					}
+					perror("--------> 43 optimization \n");
+					$$.index_sentry = $1.index_sentry;
+					$$.left = $1.right;
+					$$.type = 43;
+				}
+				else if($1.index_sentry != index_sentry && $3.index_sentry != index_sentry){
+					perror("--------> condition 44 optimization \n");
+					$$.type = 42;
+					int len = strlen($1.left)+strlen($1.right)+strlen($3.left)+strlen($3.right)+6;
+					$$.left = malloc(len);
+					memset($$.left,0,len);
+					snprintf($$.left,len,"%s*%s+%s*%s",$1.left,$1.right,$3.left,$3.right);
+
+				}
+				else{
+					perror("optimization + optimization dependence 2\n");
+					return -1;
+				}
+			}
+			else{
+				perror("not yet implemented wait a while please!\n");
+				return -123;
+			}
+			/*
+			else ($1.type == 1 && $3.type == 3){
+
+
+			}
+			else ($1.type == 2 && $3.type == 2){
+
+
+			}
+			else ($1.type == 2 && $3.type == 1){
+
+
+			}
+			else ($1.type == 2 && $3.type == 3){
+
+
+			}
+			else ($1.type == 3 && $3.type == 3){
+
+
+			}
+			else ($1.type == 3 && $3.type == 1){
+
+
+			}
+			else ($1.type == 3 && $3.type == 2){
+
+
+			}*/
+
+
+
+
+
 
 		}
 		| assignment_expression {
