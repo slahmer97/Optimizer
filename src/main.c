@@ -3,33 +3,33 @@
 //
 #include <stdio.h>
 #include <zconf.h>
-#include "headers/ast.h"
 #include "headers/defs.h"
-#include "headers/linkedlist.h"
-#include "headers/symbol.h"
 
 extern FILE *yyin, *yyout;
 int file_exist(const char*);
 int remove_file(const char*);
+
+//extern YY_FLUSH_BUFFER;
 int main(int argc,char**argv){
     globalData.symbol = subscribe_shared_symbol("Blaster");
     int ret = -1;
     globalData.symbol->optimized = -1;
 
+    display_symbol_table();
     while (1){
         printf("[+] Optimizer is waitting\n");
-        int sval;
-        sem_getvalue(globalData.sem_prod_cons,&sval);
-        printf("[+] sem : %d\n",sval);
-
         sem_wait(globalData.sem_prod_cons);
-        if(globalData.finished != 0)
+        if(globalData.symbol->finished != 0)
             break;
         printf("[+] Optimizer Started\n");
+
         yyin = fopen(OPTIMIZER_REQUEST, "r");
+        yyrestart(yyin);
+
         //yyout = fopen(OPTIMIZER_FILE,"w");
         ret = yyparse();
-        if(ret == 0)
+        printf("ret : %d",ret);
+        if(ret == 1333)
             globalData.symbol->optimized = 1;
         else
            globalData.symbol->optimized = -1;

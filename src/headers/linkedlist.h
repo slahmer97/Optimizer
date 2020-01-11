@@ -4,17 +4,21 @@
 
 #ifndef OPTIMIZER_LINKEDLIST_H
 #define OPTIMIZER_LINKEDLIST_H
-#include <stdlib.h>
+
 #include "symbol.h"
-#include "ast.h"
+#include <stdio.h>
+#include <stdlib.h>
+typedef struct node {
+    symbol_p val;
+    struct node * next;
+} node_t;
 
-struct LinkedList{
-    symbol_p entry;
-    struct LinkedList *next;
-};
-typedef struct LinkedList *node;
+void print_list(node_t * head);
+void push(node_t ** head, symbol_p val);
+node_t * concatenate(node_t *a,node_t *b);
 
-node createNode(void);
-node addNode(node head, symbol_p entry);
-node fusion(node x, node y);
+int dep_exist(symbol_p val,node_t*list);
+
+
+
 #endif //OPTIMIZER_LINKEDLIST_H
