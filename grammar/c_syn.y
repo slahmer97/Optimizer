@@ -255,8 +255,15 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 
 					}
 					else {
-						perror("optmization unknown \n");
-						return -123;
+						perror("X = X + Y \n");
+						len2 = strlen($6.string_exp)+strlen($16.string_val)*2+55;
+						res2 = malloc(len2);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,1.0,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.vec2->name,$16.string_val);
+						printf("%s\n",res2);
+						write_res(res2,len2);
+						printf("%s\n",res2);
+						free(res2);
+						return 1333;
 					}
 
 
@@ -485,16 +492,42 @@ optimization1_1 :
 				}
 
 			}
+			else if($1.type == 2 && $3.type == 2){
+				perror("2-2\n");
+				// Z = X + Y ..
+				$$.vec = $1.vec;
+				$$.vec2 = $3.vec;
+				if($1.index_sentry == index_sentry &&  $3.index_sentry == index_sentry){
+					if($1.vec == $1.vec2){
+						perror("--------> 41 optimization can't be done\n");
+						return -1;
+					}
+					perror("--------> 43 optimization \n");
+					$$.index_sentry = $1.index_sentry;
+					$$.right = 0;
+					$$.left = 0;
+					$$.type = 41;
+				}
+				else if($1.index_sentry != index_sentry && $3.index_sentry != index_sentry){
+					perror("--------> condition 44 optimization \n");
+					$$.type = 42;
+					int len = strlen($1.left)+strlen($3.left)+6;
+					$$.left = malloc(len);
+					memset($$.left,0,len);
+					snprintf($$.left,len,"%s+%s",$1.left,$3.left);
+				}
+				else{
+					perror("optimization + optimization dependence 3\n");
+					return -1;
+				}
+
+			}
 			else{
 				perror("not yet implemented wait a while please!\n");
 				return -123;
 			}
 			/*
 
-			else ($1.type == 2 && $3.type == 1){
-
-
-			}
 			else ($1.type == 2 && $3.type == 3){
 
 
