@@ -9,8 +9,10 @@
 	int current_type_var = -1;
 
 	symbol_p index_sentry;
-
-
+	symbol_p op_index;
+	symbol_p inc_index;
+	char * assig_exp;
+	char * sh_exp;
 	int do_gen = 1;
     //int yydebug = 1;
 %}
@@ -64,16 +66,12 @@
 %start optimizer_start
 %%
 optimizer_start : optimization1 ;//| rule11;
-
-
-optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
-	//       1   2     3		4
-		'=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC ')'
-	//       5       6                 7      8          9       10            11     12       13   14
-		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator optimization1_1 ';' '}'
-	//       15  16         17  18         19       20                21            22  23
-		{
-			if(index_sentry != $12.sentry || index_sentry != $8.sentry){
+a : ;
+level1 : a a a a a a a a a a a a a a a
+              IDENTIFIER '[' IDENTIFIER ']'  assignment_operator optimization1_1 ';'
+   //            16       17     18     19           20                21         22
+{
+			if(index_sentry != op_index || index_sentry != inc_index){
 				perror("[-] loop doesn't follow optimization crits \n");
 				return -1234;
 			}
@@ -84,22 +82,22 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 				if($21.vec == $16.sentry && $21.index_sentry != 0 && $21.index_sentry == index_sentry ){
 					//scaling....
 					perror("Scaling optimization \n");
-					len = strlen($6.string_exp)+strlen($10.string_exp)+strlen($21.right)+strlen($21.left)+50;
+					len = strlen(assig_exp)+strlen(sh_exp)+strlen($21.right)+strlen($21.left)+50;
 					res = malloc(len);
 					memset(res,0,len);
-					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.right,$21.left);
+					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,$21.right,$21.left);
 					write_res(res,len);
 					free(res);
 					return 1333;
 				}
 				else if($21.index_sentry != 0 && $21.index_sentry != index_sentry){
 					perror("init_vec 1 \n");
-					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+strlen($21.right)+45;
+					len = strlen(sh_exp)+strlen(assig_exp)+strlen($16.string_val)+strlen(assig_exp)+strlen($21.left)+strlen($21.right)+45;
 					perror("strlen done\n");
 					res = malloc(len);
 					memset(res,0,len);
 					perror("malloc done\n");
-					snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s*%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.left,$21.right);
+					snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s*%s);",sh_exp,assig_exp,$16.string_val,assig_exp,$21.left,$21.right);
 					perror("sprintf done\n");
 					write_res(res,len);
 					perror("write done\n");
@@ -116,10 +114,10 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 				if($21.vec != $16.sentry && $21.index_sentry != 0 && $21.index_sentry == index_sentry ){
 					//scopy
 					perror("Scopy optimization \n");
-					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($21.vec->name)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+50;
+					len = strlen(sh_exp)+strlen(assig_exp)+strlen($21.vec->name)+strlen(assig_exp)+strlen($16.string_val)+strlen(assig_exp)+50;
 					res = malloc(len);
 					memset(res,0,len);
-					snprintf(res,len,"cblas_scopy((const int)%s-%s+1,%s+%s,1,%s+%s,1);",$10.string_exp,$6.string_exp,$21.vec->name,$6.string_exp,$16.string_val,$6.string_exp);
+					snprintf(res,len,"cblas_scopy((const int)%s-%s+1,%s+%s,1,%s+%s,1);",sh_exp,assig_exp,$21.vec->name,assig_exp,$16.string_val,assig_exp);
 					write_res(res,len);
 					free(res);
 					return 1333;
@@ -127,11 +125,11 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 				}
 				else if( $21.index_sentry != 0 && $21.index_sentry != index_sentry){
 					perror("init_vec2  \n");
-					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+45;
+					len = strlen(sh_exp)+strlen(assig_exp)+strlen($16.string_val)+strlen(assig_exp)+strlen($21.left)+45;
 					res = malloc(len);
 					memset(res,0,len);
 					perror($21.left);
-					snprintf(res,len,"init_fvec(%s-%s+1,%s+%s,(const float)%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.left);
+					snprintf(res,len,"init_fvec(%s-%s+1,%s+%s,(const float)%s);",sh_exp,assig_exp,$16.string_val,assig_exp,$21.left);
 					write_res(res,len);
 					free(res);
 					return 1333;
@@ -146,20 +144,20 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 				if($21.vec == $16.sentry && $21.index_sentry != 0 && $21.index_sentry == index_sentry ){
 					//scaling....
 					perror("Scaling optimization 3\n");
-					len = 100;//strlen($6.string_exp)+strlen($10.string_exp)+strlen($21.right)+strlen($21.left)+50;
+					len = 100;//strlen(assig_exp)+strlen(sh_exp)+strlen($21.right)+strlen($21.left)+50;
 					res = malloc(len);
 					memset(res,0,len);
-					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.left,$21.vec->name);
+					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,$21.left,$21.vec->name);
 					write_res(res,len);
 					free(res);
 					return 1333;
 				}
 				else if($21.index_sentry != 0 && $21.index_sentry != index_sentry){
 					perror("init_vec 3 \n");
-					len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+strlen($21.right)+45;
+					len = strlen(sh_exp)+strlen(assig_exp)+strlen($16.string_val)+strlen(assig_exp)+strlen($21.left)+strlen($21.right)+45;
 					res = malloc(len);
 					memset(res,0,len);
-					snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s*%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.right,$21.left);
+					snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s*%s);",sh_exp,assig_exp,$16.string_val,assig_exp,$21.right,$21.left);
 					perror("sprintf done\n");
 					write_res(res,len);
 					free(res);
@@ -172,10 +170,10 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 			}
 			else if($21.type == 5){
 				perror("init_vec 5 \n");
-				len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+45;
+				len = strlen(sh_exp)+strlen(assig_exp)+strlen($16.string_val)+strlen(assig_exp)+strlen($21.left)+45;
 				res = malloc(len);
 				memset(res,0,len);
-				snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.left);
+				snprintf(res,len,"init_fvec(%s-%s+1,(float*)(%s+%s),(const float)%s);",sh_exp,assig_exp,$16.string_val,assig_exp,$21.left);
 				perror("sprintf done\n");
 				write_res(res,len);
 				free(res);
@@ -192,13 +190,13 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 					perror("y = y*a+y*b :/ can't be done \n");
 					return -1;
 					//TODO delete later
-					len = strlen($6.string_exp)+strlen($10.string_exp)+strlen($21.left)+strlen($16.string_val)+50;
+					len = strlen(assig_exp)+strlen(sh_exp)+strlen($21.left)+strlen($16.string_val)+50;
 					res = malloc(len);
 					memset(res,0,len);
-					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.left,$16.string_val);
-					len2 = strlen($6.string_exp)+strlen($21.left)+strlen($16.string_val)*2+70;
+					snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,$21.left,$16.string_val);
+					len2 = strlen(assig_exp)+strlen($21.left)+strlen($16.string_val)*2+70;
 					res2 = malloc(len2);
-					snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.right,$16.string_val,$16.string_val);
+					snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",sh_exp,assig_exp,$21.right,$16.string_val,$16.string_val);
 					res1 = malloc(len+len2+3);
 					snprintf(res1,len+len2+3,"%s%s",res,res2);
 					printf("%s\n",res1);
@@ -211,13 +209,13 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 				else if($16.sentry == $21.vec && $16.sentry != $21.vec2){
 					if($21.left != 0 && $21.right != 0){
 						perror("Z = Z*a+Y*b =D \n");
-						len = strlen($6.string_exp)+strlen($10.string_exp)+strlen($21.left)+strlen($16.string_val)+50;
+						len = strlen(assig_exp)+strlen(sh_exp)+strlen($21.left)+strlen($16.string_val)+50;
 						res = malloc(len);
 						memset(res,0,len);
-						snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.left,$16.string_val);
-						len2 = strlen($6.string_exp)+strlen($21.right)+strlen($16.string_val)*2+70;
+						snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,$21.left,$16.string_val);
+						len2 = strlen(assig_exp)+strlen($21.right)+strlen($16.string_val)*2+70;
 						res2 = malloc(len2);
-						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.right,$21.vec2->name,$16.string_val);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",sh_exp,assig_exp,$21.right,$21.vec2->name,$16.string_val);
 						res1 = malloc(len+len2+3);
 						snprintf(res1,len+len2+3,"%s%s",res,res2);
 						printf("%s\n",res1);
@@ -228,22 +226,22 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 					}
 					else if($21.left == 0 && $21.right != 0){
 						perror("Z = Z +Y*b =D \n");
-						len2 = strlen($6.string_exp)+strlen($21.right)+strlen($16.string_val)*2+70;
+						len2 = strlen(assig_exp)+strlen($21.right)+strlen($16.string_val)*2+70;
 						res2 = malloc(len2);
-						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.right,$21.vec2->name,$16.string_val);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",sh_exp,assig_exp,$21.right,$21.vec2->name,$16.string_val);
 						write_res(res2,len2);
 						printf("%s\n",res2);
 						free(res2);
 					}
 					else if($21.left != 0 && $21.right == 0){
 						perror("Z = Z*a +Y =D \n");
-						len = strlen($6.string_exp)+strlen($10.string_exp)+strlen($21.left)+strlen($16.string_val)+50;
+						len = strlen(assig_exp)+strlen(sh_exp)+strlen($21.left)+strlen($16.string_val)+50;
 						res = malloc(len);
 						memset(res,0,len);
-						snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$10.string_exp,$6.string_exp,$21.left,$16.string_val);
-						len2 = strlen($6.string_exp)+strlen($16.string_val)*2+55;
+						snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,$21.left,$16.string_val);
+						len2 = strlen(assig_exp)+strlen($16.string_val)*2+55;
 						res2 = malloc(len2);
-						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,1.0,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.vec2->name,$16.string_val);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,1.0,(const float*)%s,1,%s,1);",sh_exp,assig_exp,$21.vec2->name,$16.string_val);
 						res1 = malloc(len+len2+3);
 						snprintf(res1,len+len2+3,"%s%s",res,res2);
 						printf("%s\n",res1);
@@ -256,9 +254,9 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 					}
 					else {
 						perror("X = X + Y \n");
-						len2 = strlen($6.string_exp)+strlen($16.string_val)*2+55;
+						len2 = strlen(assig_exp)+strlen($16.string_val)*2+55;
 						res2 = malloc(len2);
-						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,1.0,(const float*)%s,1,%s,1);",$10.string_exp,$6.string_exp,$21.vec2->name,$16.string_val);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,1.0,(const float*)%s,1,%s,1);",sh_exp,assig_exp,$21.vec2->name,$16.string_val);
 						printf("%s\n",res2);
 						write_res(res2,len2);
 						printf("%s\n",res2);
@@ -284,10 +282,10 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 					perror("optimization 42 can't be done :/ \n");
 					return -1;
 				}
-				len = strlen($10.string_exp)+strlen($6.string_exp)+strlen($16.string_val)+strlen($6.string_exp)+strlen($21.left)+55;
+				len = strlen(sh_exp)+strlen(assig_exp)+strlen($16.string_val)+strlen(assig_exp)+strlen($21.left)+55;
 				res = malloc(len);
 				memset(res,0,len);
-				snprintf(res,len,"init_fvec((const int)%s-%s+1,(float*)(%s+%s),(const float)%s);",$10.string_exp,$6.string_exp,$16.string_val,$6.string_exp,$21.left);
+				snprintf(res,len,"init_fvec((const int)%s-%s+1,(float*)(%s+%s),(const float)%s);",sh_exp,assig_exp,$16.string_val,assig_exp,$21.left);
 				perror("sprintf done\n");
 				write_res(res,len);
 				free(res);
@@ -295,7 +293,15 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 			}
 
 			index_sentry = 0;
-		}
+}
+
+//===============ATTENTION if you modifie this or add anything make sure you fixed the index of all variables..if you fuck it don't tell me it's doesn't work.==============
+optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
+	//       1   2     3		4
+		'=' assignment_expression {assig_exp = $6.string_exp;}';' IDENTIFIER {op_index =$9.sentry; } comp_op shift_expression {sh_exp = $12.string_exp;}';'  IDENTIFIER{inc_index=$15.sentry;} INC ')'
+	//       5       6                 7                          8          9       10            11     12       13   14
+		'{' level1 '}'
+	//       15  16         17  18         19       20                21            22  23
 
 
 optimization1_1 :
