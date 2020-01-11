@@ -368,6 +368,7 @@ optimization1_1 :
 			perror("optimization1_1 '+' optimization1_1 \n");
 
 			if($1.type == 1 && $3.type == 1){
+				perror("1-1\n");
 				//three cases axy,init,dependence error.
 				$$.vec = $1.vec;
 				$$.vec2 = $3.vec;
@@ -398,6 +399,7 @@ optimization1_1 :
 				}
 			}
 			else if($1.type == 1 && $3.type == 2){
+				perror("1-2\n");
 				// Z = X*a + Y ..
 				$$.vec = $1.vec;
 				$$.vec2 = $3.vec;
@@ -418,27 +420,77 @@ optimization1_1 :
 					int len = strlen($1.left)+strlen($1.right)+strlen($3.left)+strlen($3.right)+6;
 					$$.left = malloc(len);
 					memset($$.left,0,len);
-					snprintf($$.left,len,"%s*%s+%s*%s",$1.left,$1.right,$3.left,$3.right);
-
+					snprintf($$.left,len,"%s*%s+%s*%s",$1.left,$1.right,$3.left);
 				}
 				else{
 					perror("optimization + optimization dependence 2\n");
 					return -1;
 				}
 			}
+			else if ($1.type == 1 && $3.type == 3){
+				perror("1-3\n");
+				$$.vec = $1.vec;
+				$$.vec2 = $3.vec;
+				if($1.index_sentry == index_sentry &&  $3.index_sentry == index_sentry){
+					if($1.vec == $1.vec2){
+						perror("--------> 41 optimization can't be done\n");
+						return -1;
+					}
+					perror("--------> 41 optimization \n");
+					$$.type = 41;
+					$$.index_sentry = $1.index_sentry;
+					$$.left = $1.right;
+					$$.right = $3.left;
+				}
+				else if($1.index_sentry != index_sentry && $3.index_sentry != index_sentry){
+					perror("--------> 42 optimization \n");
+					$$.type = 42;
+					int len = strlen($1.left)+strlen($1.right)+strlen($3.left)+strlen($3.right)+6;
+					$$.left = malloc(len);
+					memset($$.left,0,len);
+					snprintf($$.left,len,"%s*%s+%s*%s",$1.left,$1.right,$3.left,$3.right);
+				}
+				else{
+					perror("optimization + optimization dependence 1\n");
+					return -1;
+				}
+			}
+			else if($1.type == 2 && $3.type == 1){
+				perror("2-1\n");
+				// Z = X + Y*a ..
+				$$.vec = $1.vec;
+				$$.vec2 = $3.vec;
+				if($1.index_sentry == index_sentry &&  $3.index_sentry == index_sentry){
+					if($1.vec == $1.vec2){
+						perror("--------> 41 optimization can't be done\n");
+						return -1;
+					}
+					perror("--------> 43 optimization \n");
+					$$.index_sentry = $1.index_sentry;
+					$$.right = $3.right;
+					$$.left = 0;
+					$$.type = 41;
+				}
+				else if($1.index_sentry != index_sentry && $3.index_sentry != index_sentry){
+					perror("--------> condition 44 optimization \n");
+					$$.type = 42;
+					int len = strlen($1.left)+strlen($1.right)+strlen($3.left)+strlen($3.right)+6;
+					$$.left = malloc(len);
+					memset($$.left,0,len);
+					snprintf($$.left,len,"%s+%s*%s",$1.left,$3.left,$3.right);
+				}
+				else{
+					perror("optimization + optimization dependence 2\n");
+					return -1;
+				}
+
+			}
 			else{
 				perror("not yet implemented wait a while please!\n");
 				return -123;
 			}
 			/*
-			else ($1.type == 1 && $3.type == 3){
 
-
-			}
-			else ($1.type == 2 && $3.type == 2){
-
-
-			}
 			else ($1.type == 2 && $3.type == 1){
 
 
