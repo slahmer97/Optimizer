@@ -441,7 +441,7 @@ level1_1 : a a a a a a a a a a a a a a a
 						len2 = strlen(assig_exp)*3+strlen(sh_exp)+strlen($16.string_val)+strlen($21.vec->name)+strlen($21.left)+100;
 						res2 = malloc(len2);
 						memset(res2,0,len2);
-						snprintf(res2,len2,"cblas_saxpy((const int)(%s)-(%s)+1,(const float)(%s),(const float*)(%s+(%s)),1,(%s+(%s)),1);",sh_exp,assig_exp,$21.left,$21.vec->name,assig_exp,$16.string_val,assig_exp);
+						snprintf(res2,len2,"cblas_saxpy((const int)(%s)-(%s)+1,(const float)(%s),(const float*)(%s+(%s)),1,(%s+(%s)),1);",sh_exp,assig_exp,$21.left,$16.string_val,assig_exp,$21.vec->name,assig_exp);
 						printf("$$=====%s\n",res2);
 						write_res(res2,len2+3);
 						free(res2);
@@ -686,7 +686,7 @@ optimization1_1 :
 					int len = strlen($1.left)+strlen($1.right)+strlen($3.left)+strlen($3.right)+6;
 					$$.left = malloc(len);
 					memset($$.left,0,len);
-					snprintf($$.left,len,"%s*%s+%s*%s",$1.left,$1.right,$3.left);
+					snprintf($$.left,len,"%s*%s+%s",$1.left,$1.right,$3.left);
 				}
 				else{
 					perror("optimization + optimization dependence 2\n");
