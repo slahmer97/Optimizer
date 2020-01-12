@@ -23,7 +23,6 @@
 #define DEC 279
 #define LEFT_OP 280
 #define RIGHT_OP 281
-#define level2 282
 #ifdef YYSTYPE
 #undef  YYSTYPE_IS_DECLARED
 #define YYSTYPE_IS_DECLARED 1

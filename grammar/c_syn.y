@@ -325,12 +325,21 @@ level1_1 : a a a a a a a a a a a a a a a
 						free(res2);
 					}
 					else if($21.left == 0 && $21.right != 0){
-						perror("Z = Z + a*Y =D \n");
+						perror("Z = Y + a*Z =D \n");
+						len = strlen(assig_exp)+strlen(sh_exp)+strlen($21.right)+strlen($16.string_val)+50;
+						res = malloc(len);
+						memset(res,0,len);
+						perror("memset\n");
+						snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,$21.right,$16.string_val);
 						len2 = strlen(assig_exp)+strlen($21.right)+strlen($16.string_val)*2+70;
 						res2 = malloc(len2);
-						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",sh_exp,assig_exp,$21.right,$21.vec2->name,$16.string_val);
-						write_res(res2,len2);
-						printf("%s\n",res2);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,1.0,(const float*)%s,1,%s,1);",sh_exp,assig_exp,$21.vec->name,$16.string_val);
+						res1 = malloc(len+len2+3);
+						snprintf(res1,len+len2+3,"%s%s",res,res2);
+						printf("%s\n",res1);
+						write_res(res1,len+len2+3);
+						free(res);
+						free(res1);
 						free(res2);
 					}
 					else if($21.left != 0 && $21.right == 0){
