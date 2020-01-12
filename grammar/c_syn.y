@@ -1333,7 +1333,7 @@ primary_expression: IDENTIFIER {
 		int len = strlen(curr_var_name_tmp);
 		$$.string_exp = malloc(len+1);
 		snprintf($$.string_exp,len+1, "%s",curr_var_name_tmp);
-		float a = strtof(curr_var_name_tmp, NULL);
+		//float a = strtof(curr_var_name_tmp, NULL);
 	}
 	| '(' expression ')' {
 		$$.list = $2.list;

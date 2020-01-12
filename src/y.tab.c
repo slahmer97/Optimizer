@@ -1822,7 +1822,7 @@ yyreduce:
 						len2 = strlen(assig_exp)*3+strlen(sh_exp)+strlen((yyvsp[-6].vv).string_val)+strlen((yyvsp[-1].vv).vec->name)+strlen((yyvsp[-1].vv).left)+100;
 						res2 = malloc(len2);
 						memset(res2,0,len2);
-						snprintf(res2,len2,"cblas_saxpy((const int)(%s)-(%s)+1,(const float)(%s),(const float*)(%s+(%s)),1,(%s+(%s)),1);",sh_exp,assig_exp,(yyvsp[-1].vv).left,(yyvsp[-1].vv).vec->name,assig_exp,(yyvsp[-6].vv).string_val,assig_exp);
+						snprintf(res2,len2,"cblas_saxpy((const int)(%s)-(%s)+1,(const float)(%s),(const float*)(%s+(%s)),1,(%s+(%s)),1);",sh_exp,assig_exp,(yyvsp[-1].vv).left,(yyvsp[-6].vv).string_val,assig_exp,(yyvsp[-1].vv).vec->name,assig_exp);
 						printf("$$=====%s\n",res2);
 						write_res(res2,len2+3);
 						free(res2);
@@ -2125,7 +2125,7 @@ yyreduce:
 					int len = strlen((yyvsp[-2].vv).left)+strlen((yyvsp[-2].vv).right)+strlen((yyvsp[0].vv).left)+strlen((yyvsp[0].vv).right)+6;
 					(yyval.vv).left = malloc(len);
 					memset((yyval.vv).left,0,len);
-					snprintf((yyval.vv).left,len,"%s*%s+%s*%s",(yyvsp[-2].vv).left,(yyvsp[-2].vv).right,(yyvsp[0].vv).left);
+					snprintf((yyval.vv).left,len,"%s*%s+%s",(yyvsp[-2].vv).left,(yyvsp[-2].vv).right,(yyvsp[0].vv).left);
 				}
 				else{
 					perror("optimization + optimization dependence 2\n");
@@ -2965,7 +2965,7 @@ yyreduce:
 		int len = strlen(curr_var_name_tmp);
 		(yyval.vv).string_exp = malloc(len+1);
 		snprintf((yyval.vv).string_exp,len+1, "%s",curr_var_name_tmp);
-		float a = strtof(curr_var_name_tmp, NULL);
+		//float a = strtof(curr_var_name_tmp, NULL);
 	}
 #line 2971 "y.tab.c" /* yacc.c:1652  */
     break;

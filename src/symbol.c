@@ -16,8 +16,11 @@ struct shared_symbol* create_shared_symbol(char* name){
         perror("create_shared_symbol()");
         return (struct shared_symbol*)0;
     }
-    ftruncate(shm_fd, SHARED_SIZE);
-
+    int r = ftruncate(shm_fd, SHARED_SIZE);
+    if (r != 0) {
+        perror("Ftruncate error\n");
+        exit(1);
+    }
 
     struct shared_symbol* ret =(struct shared_symbol*)mmap(0,SHARED_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
     memset((char*)ret,0,SHARED_SIZE);
