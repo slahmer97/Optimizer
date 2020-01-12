@@ -50,6 +50,10 @@
 	struct {
 		int op_type;
 	}zz;
+
+	struct {
+		int tp;
+	}typiee;
 }
 %token INT VOID FLOAT
 %token FOR WHILE DO IF ELSE RETURN
@@ -58,16 +62,49 @@
 %token '='
 %token '(' ')' ';' '}' '{' ']' '[' '/' '*' '+' '-' '<' '>' '%'
 %token AND_OP OR_OP LE_OP GE_OP EQ_OP NE_OP INC DEC LEFT_OP RIGHT_OP
-%type <vv> type_specifier declaration_specifiers primary_expression expression  compound_statement statement_list declaration_list
-%type <vv> selection_statement pointer direct_declarator declarator init_declarator declaration init_declarator_list initializer initializer_list statement postfix_expression
-%type <vv> iteration_statement multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression
-%type <vv> optimization1_1 sscale expression_statement and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
+%type <vv> type_specifier  primary_expression expression
+%type <vv>  postfix_expression
+%type <vv>  multiplicative_expression additive_expression shift_expression relational_expression equality_expression unary_expression assignment_expression
+%type <vv> optimization1_1 and_expression exclusive_or_expression inclusive_or_expression logical_or_expression logical_and_expression assignment_operator
 %type <zz> comp_op
 %start optimizer_start
 %%
 optimizer_start : optimization1 ;//| rule11;
 a : ;
-level1 : a a a a a a a a a a a a a a a
+level1 : level1_1 | level1_2 ;
+level1_2 : vec_swap;
+
+
+
+vec_swap : type_specifier IDENTIFIER assignment_operator IDENTIFIER '[' IDENTIFIER ']' ';'
+	//    1              2           3                   4       5      6        7  8
+	   IDENTIFIER '[' IDENTIFIER ']' assignment_operator IDENTIFIER '[' IDENTIFIER ']' ';'
+	//     9       10    11       12        13              14       15     16      17  18
+	   IDENTIFIER '[' IDENTIFIER ']' assignment_operator IDENTIFIER ';'
+       //     19       20     21      22         23             24       25
+
+	   {
+	   		if($2.sentry == $24.sentry && index_sentry == $6.sentry && index_sentry == $16.sentry &&
+	   		   $11.sentry == index_sentry && $21.sentry == index_sentry && $9.sentry != $19.sentry &&
+	   		   $4.sentry == $9.sentry && $14.sentry == $19.sentry ) {
+				void cblas_sswap(const int size, float *X, const int incX,float *Y, const int incY);
+
+				int len = strlen(sh_exp)+strlen(assig_exp)+strlen($9.string_val)+
+				      strlen(assig_exp)+strlen($19.string_val)+strlen(assig_exp)+50;
+				char* res = malloc(len);
+				memset(res,0,len);
+				snprintf(res,len,"cblas_sswap((const int)%s-%s+1,(%s+%s),1,(%s+%s),1);",sh_exp,assig_exp,$9.string_val,assig_exp,$19.string_val,assig_exp);
+				write_res(res,len);
+				free(res);
+				return 1333;
+	   		   }
+	   		   else{
+						perror("Swap form without conditions!\n");
+	   		   }
+	   }
+;
+
+level1_1 : a a a a a a a a a a a a a a a
               IDENTIFIER '[' IDENTIFIER ']'  assignment_operator optimization1_1 ';'
    //            16       17     18     19           20                21         22
 {
@@ -153,7 +190,7 @@ level1 : a a a a a a a a a a a a a a a
 					return 1333;
 				}
 				else if($21.index_sentry != 0 && $21.index_sentry != index_sentry){
-					perror("init_vec 3 \n");
+					perror("init_vec 193 \n");
 					len = strlen(sh_exp)+strlen(assig_exp)+strlen($16.string_val)+strlen(assig_exp)+strlen($21.left)+strlen($21.right)+45;
 					res = malloc(len);
 					memset(res,0,len);
@@ -169,7 +206,7 @@ level1 : a a a a a a a a a a a a a a a
 				}
 			}
 			else if($21.type == 5){
-				perror("init_vec 5 \n");
+				perror("init_vec 209 \n");
 				len = strlen(sh_exp)+strlen(assig_exp)+strlen($16.string_val)+strlen(assig_exp)+strlen($21.left)+45;
 				res = malloc(len);
 				memset(res,0,len);
@@ -181,7 +218,6 @@ level1 : a a a a a a a a a a a a a a a
 			}
 			else if($21.type == 41){
 				perror("axy 6 \n");
-				//cblas_saxpy(const int size, const float alpha, const float *X,const int incX, float *Y, const int incY);
 				//y = a*x + y
 				if($16.sentry == $21.vec && $16.sentry == $21.vec2){
 					//y = y*a + y*b
@@ -268,8 +304,66 @@ level1 : a a a a a a a a a a a a a a a
 
 					return 1333;
 				}
+				else if($16.sentry != $21.vec && $16.sentry == $21.vec2){
+					perror("X = a*Y + X");
+					if($21.left != 0 && $21.right != 0){
+						perror("Z = Z*a+Y*b =D \n");
+						len = strlen(assig_exp)+strlen(sh_exp)+strlen($21.left)+strlen($16.string_val)+50;
+						res = malloc(len);
+						memset(res,0,len);
+						snprintf(res,len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",sh_exp,assig_exp,$21.left,$16.string_val);
+						len2 = strlen(assig_exp)+strlen($21.right)+strlen($16.string_val)*2+70;
+						res2 = malloc(len2);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",sh_exp,assig_exp,$21.right,$21.vec2->name,$16.string_val);
+						res1 = malloc(len+len2+3);
+						snprintf(res1,len+len2+3,"%s%s",res,res2);
+						printf("%s\n",res1);
+						write_res(res1,len+len2+3);
+						free(res);
+						free(res1);
+						free(res2);
+					}
+					else if($21.left == 0 && $21.right != 0){
+						perror("Z = Z + a*Y =D \n");
+						len2 = strlen(assig_exp)+strlen($21.right)+strlen($16.string_val)*2+70;
+						res2 = malloc(len2);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,(const float)%s,(const float*)%s,1,%s,1);",sh_exp,assig_exp,$21.right,$21.vec2->name,$16.string_val);
+						write_res(res2,len2);
+						printf("%s\n",res2);
+						free(res2);
+					}
+					else if($21.left != 0 && $21.right == 0){
+						printf("=======> HERE : %s\n",$21.vec->name);
+						printf("=======> HERE : %s\n",$21.vec2->name);
+						perror("Z = a*Z +Y =D \n");
+						len2 = strlen(assig_exp)*3+strlen(sh_exp)+strlen($16.string_val)+strlen($21.vec->name)+strlen($21.left)+100;
+						res2 = malloc(len2);
+						memset(res2,0,len2);
+						snprintf(res2,len2,"cblas_saxpy((const int)(%s)-(%s)+1,(const float)(%s),(const float*)(%s+(%s)),1,(%s+(%s)),1);",sh_exp,assig_exp,$21.left,$16.string_val,assig_exp,$21.vec->name,assig_exp);
+						printf("$$=====%s\n",res2);
+						write_res(res2,len2+3);
+						free(res2);
+						return 1333;
+//=============================================================================
+					}
+					else {
+						perror("X = X + Y \n");
+						len2 = strlen(assig_exp)+strlen($16.string_val)*2+55;
+						res2 = malloc(len2);
+						snprintf(res2,len2,"cblas_saxpy((const int)%s-%s+1,1.0,(const float*)%s,1,%s,1);",sh_exp,assig_exp,$21.vec2->name,$16.string_val);
+						printf("%s\n",res2);
+						write_res(res2,len2);
+						printf("%s\n",res2);
+						free(res2);
+						return 1333;
+					}
+
+
+
+				}
 				else{
 					//y = x*a + y*b
+					perror("error is here...\n");
 					perror("y = x*a+y*b =D \n");
 					return -1;
 				}
@@ -362,7 +456,6 @@ optimization1_1 :
 			$$.right = malloc(right_len);
 			memset($$.right,0,right_len);
 			snprintf($$.right,right_len,"%s[%s]",$3.string_val,$5.string_val);
-			perror("passed sprintf\n");
 			$$.left = $1.string_exp;
 			$$.vec = $3.sentry;
 			$$.index_sentry = $5.sentry;
@@ -620,6 +713,7 @@ optimization1_1 :
 				// X = a*W + Z
 				$$.vec = $1.vec;
 				$$.vec2 = $3.vec;
+
 				if($1.index_sentry == index_sentry &&  $3.index_sentry == index_sentry){
 					if($1.vec == $1.vec2){
 						perror("--------> 41 optimization can't be done\n");
@@ -669,143 +763,7 @@ optimization1_1 :
 
 			$$.left = $1.string_exp;
 		}
-rule11:  FOR '(' IDENTIFIER '=' assignment_expression ';' IDENTIFIER comp_op shift_expression ';'  IDENTIFIER INC')'
- 		'{' IDENTIFIER '[' IDENTIFIER ']'  assignment_operator IDENTIFIER '[' IDENTIFIER ']' sscale ';' '}'
- 		//   15             17                                     20             22           24
- 		{
- 			// $3.sentry; $8.sentry; $12.sentry; $14.sentry; $17.sentry; $19.sentry;
-			symbol_p t = $15.sentry;
-			symbol_p z =  $20.sentry;
-			char *res;
-			int assig_len = strlen($5.string_exp);
-			int shift_len = strlen($9.string_exp);
-			int index_len = strlen($3.string_val);
-			int dest_len = strlen($15.string_val);
-			int orig_len = strlen($20.string_val);
-			if( $24.type == 1){
-				if(z == t){
-					perror("[-] Copying vec to it self is not supported yet\n");
-					return -33;
-				}
-				if( t != 0 && z != 0){
-					if(!(t->glob_type == FLOAT && z->glob_type == FLOAT)){
-						perror("[-] TYPE is not supported yet ");//: %d",t->glob_type);
-						return -33;
-					}
 
-				}
-				printf("EXPR : %s\n",$5.string_exp);
-				int total_len = assig_len+shift_len+index_len+dest_len+orig_len+32;
-				if( $3.sentry == $11.sentry && $3.sentry == $7.sentry && $3.sentry == $17.sentry && $3.sentry == $22.sentry){
-					//cblas_ccopy(const int N, const void *X, const int incX,void *Y, const int incY);
-					res = malloc(total_len);
-					memset(res,0,total_len);
-					if($8.op_type == 0)
-						snprintf(res,total_len,"cblas_scopy(%s-%s+1,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
-					else if($8.op_type == 1)
-						snprintf(res,total_len-2,"cblas_scopy(%s-%s,(%s+%s),%s,(%s+%s),%s);",$9.string_exp,$5.string_exp,$5.string_exp,$20.string_val,"1",$15.string_val,$5.string_exp,"1");
-
-					printf("\n---------------\nFunc : \n %s \n---------------\n",res);
-					perror("[+] Optimization copy\n");
-					FILE* f = fopen(OPTIMIZER_FILE,"w");
-					fprintf(f,"%s",res);
-					fclose(f);
-					globalData.symbol->bytes_count = total_len;
-					free(res);
-					perror("Optimization 93");
-					return 1333;
-				}
-				else if ($22.sentry != $3.sentry && $20.sentry != $3.sentry ){
-
-					// init_vec(t,N,expr);
-					int lenn = assig_len*2+shift_len+dest_len+orig_len+strlen($22.string_val)+35;
-					res = malloc(lenn);
-					memset(res,0,lenn);
-					if($8.op_type == 0)
-						snprintf(res,lenn,"init_fvec(%s-%s+1,(float*)(%s+%s),%s[%s]);",$9.string_exp,$5.string_exp,$15.string_val,$5.string_exp,$20.string_val,$22.string_val);
-					else if($8.op_type == 1)
-						snprintf(res,lenn-2,"init_fvec(%s-%s,(float*)(%s+%s),%s[%s]);",$9.string_exp,$5.string_exp,$15.string_val,$5.string_exp,$20.string_val,$22.string_val);
-
-					FILE* f = fopen(OPTIMIZER_FILE,"w");
-					fprintf(f,"%s",res);
-					fclose(f);
-					globalData.symbol->bytes_count = lenn;
-					free(res);
-					perror("Optimization 111");
-					return 1333;
-				}
-				else{
-					printf("[-] init dependence !\n");
-					return -1;
-				}
- 			}
- 			else if($24.type == 2){
-
- 				node_t* head = $24.list;
-				printf("-------> head : %p\n",head);
-				while(head != 0 && head->val != $3.sentry){
-					printf("-------> %p\n",head->val);
-					head = head->next;
-				}
-				printf("-------> sentry : %p\n",$3.sentry);
-				if(head  != 0){
- 					perror("[-] multiplication with dependence\n");
- 					return -1;
- 				}
-
- 				if(z != t){
- 					if($22.sentry != $3.sentry){
-						// init_vec(t,N,expr);
-						int lenn = assig_len*2+shift_len+dest_len+orig_len+strlen($22.string_val)+strlen($24.string_val)+100;
-						res = malloc(lenn);
-						memset(res,0,lenn);
-						if($8.op_type == 0)
-							snprintf(res,lenn,"init_fvec(%s-%s+1,(float*)(%s+%s),%s[%s]*%s);",$9.string_exp,$5.string_exp,$15.string_val,$5.string_exp,$20.string_val,$22.string_val,$24.string_exp);
-						else if($8.op_type == 1)
-							snprintf(res,lenn-2,"init_fvec(%s-%s,(float*)(%s+%s),%s[%s]*%s);",$9.string_exp,$5.string_exp,$15.string_val,$5.string_exp,$20.string_val,$22.string_val,$24.string_exp);
-						FILE* f = fopen(OPTIMIZER_FILE,"w");
-						fprintf(f,"%s",res);
-						fclose(f);
-						globalData.symbol->bytes_count = lenn;
-						free(res);
-						perror("Optimization 147");
-						return 1333;
-					}
-					else{
-						perror("[-] init_vec dependecy found\n");
-						return -1;
-					}
- 				}
-
-				perror("[+] optimization found sscale\n");
-				//void cblas_sscal(const int size, const float alpha, float *X, const int incX);
-				int total_len = 60+strlen($5.string_exp)+strlen($9.string_exp)+strlen($15.string_val)+strlen($24.string_exp);
-				char *res = malloc(total_len);
-				if($8.op_type == 0)
-					snprintf(res,total_len,"cblas_sscal((const int)%s-%s+1,(const float)%s,%s,1);",$9.string_exp,$5.string_exp,$24.string_exp,$15.string_val);
-				else if($8.op_type == 1)
-					snprintf(res,total_len-2,"cblas_sscal((const int)%s-%s,(const float)%s,%s,1);",$9.string_exp,$5.string_exp,$24.string_exp,$15.string_val);
-
-
-				printf("\n---------------\nFunc : \n %s \n---------------\n",res);
-				FILE* f = fopen(OPTIMIZER_FILE,"w");
-				fprintf(f,"%s",res);
-				fclose(f);
-				globalData.symbol->bytes_count = total_len;
-				free(res);
-				return 1333;
-				perror("Optimization 173");
- 			}
-             	};
-sscale : '*' primary_expression {
-		$$.list = $2.list;
-		$$.string_exp = $2.string_exp;
-		$$.type = 2;
-	}
-	| {
-		$$.type = 1;
-	}
-	 ;
 
 comp_op : LE_OP {
 	$$.op_type = 0;
@@ -815,70 +773,12 @@ comp_op : LE_OP {
 	}
 	;
 
-compound_statement: '{' '}' {
-
-	}
-	| '{' statement_list '}' {
-
-	}
-	| '{' declaration_list '}' {
-
-	}
-	| '{' declaration_list statement_list '}' {
-
-
-	}
-	;
 
 //=====================================EXTERNAL-END=====================================================================
 
 //=====================================statement-START==================================================================
 
-statement_list: statement {
-	}
-	| statement_list statement {
 
-	};
-
-statement: //labeled_statement
-	  compound_statement {
-	  }
-	| expression_statement {
-	}
-	| selection_statement {
-
-	}
-	| iteration_statement {
-	}
-	;
-
-expression_statement: ';' {
-
-	}
-	| expression ';' {
-		$$.list = $1.list;
-		//print_list($$.list);
-	}
-	;
-
-//=======================================Statement-END==================================================================
-
-//=======================================LOOP-Conditional-EXR================================================================
-selection_statement: IF '(' expression ')' compound_statement {
-
-	}
-	| IF '(' expression ')' compound_statement ELSE compound_statement {
-
-	};
-iteration_statement:
-	 WHILE {}'(' expression ')' compound_statement {}
-
-	| FOR '(' expression_statement expression_statement expression')' compound_statement {
-		return 1333;
-	};
-
-iter_counter: {for_depth_counter_var++;};
-//=======================================CONDITIONAL-EXPR-END===========================================================
 
 //==================================START-ASSIGNEMENT===================================================================
 expression:
@@ -1223,122 +1123,29 @@ assignment_operator
 
 	}
 	;
-//====================================ASSIGNEMENT-END=================================================================
-//DONE TODO================================================
-declaration_list
-	: declaration {
-		$$.list = $1.list;
-	}
-	| declaration_list declaration {
-		concatenate($1.list,$2.list);
-		$$.list = $1.list;
-	}
-	;//=================================================USED
 
-//DONE
-declaration :
-	//: declaration_specifiers ';' // long; or int;
-	//we have type in declaration_specifiers
-	// check if declaration_specifier type fits into all items of init_declarator_list
-	declaration_specifiers init_declarator_list ';' {
-		$$.list = $2.list;
-	}
-	; //==========================================================USED
 
-//DONE
-declaration_specifiers
-	:
-	type_specifier {
-
-	}
-	;
 //=======================================================USED
 //DONE
 type_specifier
 	: VOID {
-
+		$$.type = VOID;
 	}
 	| INT  {
+		$$.type = INT;
 
 	}
 	| FLOAT {
-
-	}
-	;
-//DONE
-init_declarator_list
-	: init_declarator {
-		$$.list = $1.list;
-	}
-	| init_declarator_list ',' init_declarator {
-		$$.list = concatenate($1.list,$3.list);
-	}
-	;
-
-//DONE
-init_declarator
-	: declarator {
-		$$.list = $1.list;
-	}
-	| declarator '=' initializer {
-		$$.list = concatenate($1.list,$3.list);
-	}
-
-	;
-
-//DONE
-declarator
-	: pointer direct_declarator {
-		push(&$$.list,$2.sentry);
-	}
-	| direct_declarator {
-		$$.list = $1.list;
-	}
-	;
-
-// DONE
-direct_declarator
-	: IDENTIFIER {
-		push(&$$.list,$1.sentry);
-	}
-        | direct_declarator '[' CONST_INT ']' {
-		$$.list = $1.list;
-        }
-        //| direct_declarator '(' ')'
-
-        //| direct_declarator '(' identifier_list ')'
-
-
-        ;
-// DONE
-pointer
-	: '*'{
-
-	}
-	//| '*' type_qualifier_list
-	| '*' pointer {
-
+		$$.type = FLOAT;
 
 	}
 	;
 
 
-initializer
-	: assignment_expression {
-		$$.list = $1.list;
-	}
-	| '{' initializer_list '}' {
-		$$.list = $2.list;
-	}
-	;
-initializer_list
-	: initializer {
-		$$.list = $1.list;
-	}
-	| initializer_list ',' initializer {
-		$$.list = concatenate($1.list,$3.list);
-	}
-	;
+
+
+
+
 
 //DONE,DONE
 primary_expression: IDENTIFIER {
