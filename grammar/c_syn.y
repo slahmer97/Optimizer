@@ -71,7 +71,7 @@
 %%
 optimizer_start : optimization1 ;//| rule11;
 a : ;
-level_vec : level1 | level2 ;
+level_vec : level1 ;
 level1 : level1_1 | level1_2 ;
 level1_2 : vec_swap;
 
