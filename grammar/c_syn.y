@@ -340,7 +340,7 @@ level1_1 : a a a a a a a a a a a a a a a
 						len2 = strlen(assig_exp)*3+strlen(sh_exp)+strlen($16.string_val)+strlen($21.vec->name)+strlen($21.left)+100;
 						res2 = malloc(len2);
 						memset(res2,0,len2);
-						snprintf(res2,len2,"cblas_saxpy((const int)(%s)-(%s)+1,(const float)(%s),(const float*)(%s+(%s)),1,(%s+(%s)),1);",sh_exp,assig_exp,$21.left,$16.string_val,assig_exp,$21.vec->name,assig_exp);
+						snprintf(res2,len2,"cblas_saxpy((const int)(%s)-(%s)+1,(const float)(%s),(const float*)(%s+(%s)),1,(%s+(%s)),1);",sh_exp,assig_exp,$21.left,$21.vec->name,assig_exp,$16.string_val,assig_exp);
 						printf("$$=====%s\n",res2);
 						write_res(res2,len2+3);
 						free(res2);
