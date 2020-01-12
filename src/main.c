@@ -10,7 +10,7 @@ int file_exist(const char*);
 int remove_file(const char*);
 
 //extern YY_FLUSH_BUFFER;
-int main(int argc,char**argv){
+int main(void){
     globalData.symbol = subscribe_shared_symbol("Blaster");
     int ret = -1;
     globalData.symbol->optimized = -1;

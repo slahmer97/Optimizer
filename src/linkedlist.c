@@ -10,7 +10,7 @@ void print_list(node_t * head) {
     node_t * current = head;
     //printf("--------------------\n");
     while (current != NULL) {
-        symbol_p tmp =  current->val;
+       // symbol_p tmp =  current->val;
         //printf("%s\t",tmp->name);
         current = current->next;
     }
