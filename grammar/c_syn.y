@@ -533,7 +533,7 @@ optimization1_1 :
 					int len = strlen($1.left)+strlen($1.right)+strlen($3.left)+strlen($3.right)+6;
 					$$.left = malloc(len);
 					memset($$.left,0,len);
-					snprintf($$.left,len,"%s*%s+%s*%s",$1.left,$1.right,$3.left);
+					snprintf($$.left,len,"%s*%s+%s",$1.left,$1.right,$3.left);
 				}
 				else{
 					perror("optimization + optimization dependence 2\n");
