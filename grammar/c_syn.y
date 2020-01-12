@@ -71,6 +71,7 @@
 %%
 optimizer_start : optimization1 ;//| rule11;
 a : ;
+level_vec : level1 | level2 ;
 level1 : level1_1 | level1_2 ;
 level1_2 : vec_swap;
 
@@ -396,7 +397,7 @@ optimization1 : FOR '(' IDENTIFIER {index_sentry = $3.sentry;}
 	//       1   2     3		4
 		'=' assignment_expression {assig_exp = $6.string_exp;}';' IDENTIFIER {op_index =$9.sentry; } comp_op shift_expression {sh_exp = $12.string_exp;}';'  IDENTIFIER{inc_index=$15.sentry;} INC ')'
 	//       5       6                 7                          8          9       10            11     12       13   14
-		'{' level1 '}'
+		'{' level_vec '}'
 	//       15  16         17  18         19       20                21            22  23
 
 
